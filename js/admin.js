@@ -760,6 +760,20 @@ function populateHomepageForm() {
   if (jacketsImgUrl) jacketsImgUrl.value = homepageConfig.jacketsImg || '';
   if (tshirtsImgUrl) tshirtsImgUrl.value = homepageConfig.tshirtsImg || '';
 
+  const igImg1Url = document.getElementById('igImg1Url');
+  const igImg2Url = document.getElementById('igImg2Url');
+  const igImg3Url = document.getElementById('igImg3Url');
+  const igImg4Url = document.getElementById('igImg4Url');
+  const igImg5Url = document.getElementById('igImg5Url');
+  const igImg6Url = document.getElementById('igImg6Url');
+  
+  if (igImg1Url) igImg1Url.value = homepageConfig.igImg1 || '';
+  if (igImg2Url) igImg2Url.value = homepageConfig.igImg2 || '';
+  if (igImg3Url) igImg3Url.value = homepageConfig.igImg3 || '';
+  if (igImg4Url) igImg4Url.value = homepageConfig.igImg4 || '';
+  if (igImg5Url) igImg5Url.value = homepageConfig.igImg5 || '';
+  if (igImg6Url) igImg6Url.value = homepageConfig.igImg6 || '';
+
   // Attach submit handler once
   const form = document.getElementById('homepageForm');
   if (form) {
@@ -785,10 +799,18 @@ function saveHomepageConfig() {
   const jacketsImg = document.getElementById('jacketsImgUrl').value.trim();
   const tshirtsImg = document.getElementById('tshirtsImgUrl').value.trim();
 
+  const igImg1 = document.getElementById('igImg1Url').value.trim();
+  const igImg2 = document.getElementById('igImg2Url').value.trim();
+  const igImg3 = document.getElementById('igImg3Url').value.trim();
+  const igImg4 = document.getElementById('igImg4Url').value.trim();
+  const igImg5 = document.getElementById('igImg5Url').value.trim();
+  const igImg6 = document.getElementById('igImg6Url').value.trim();
+
   const configData = {
     announcementBar, heroTitle, heroSubtitle,
     showSaleSection, saleTitle, saleSubtitle,
-    heroImg, saleImg, shirtsImg, hoodiesImg, jacketsImg, tshirtsImg
+    heroImg, saleImg, shirtsImg, hoodiesImg, jacketsImg, tshirtsImg,
+    igImg1, igImg2, igImg3, igImg4, igImg5, igImg6
   };
 
   fetch('/api/homepage', {

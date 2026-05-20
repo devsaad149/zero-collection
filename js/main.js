@@ -319,6 +319,35 @@ function loadHomepageConfig() {
             }
           }
         }
+
+        // Instagram Feed Images
+        const igGrid = document.getElementById('instagramFeedGrid');
+        if (igGrid) {
+          const igImages = [
+            config.igImg1, config.igImg2, config.igImg3,
+            config.igImg4, config.igImg5, config.igImg6
+          ];
+          
+          let igHtml = '';
+          igImages.forEach(imgUrl => {
+            if (imgUrl) {
+              igHtml += `
+                <a href="https://www.instagram.com/zerocollection_?igsh=emFidHg2NDhmYmZ4" target="_blank" class="img-zoom-container" style="display: block; aspect-ratio: 1/1; background-color: var(--color-black); position: relative; border: 1px solid var(--color-black); text-decoration: none;">
+                  <img src="${imgUrl}" alt="Instagram Feed Image" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" />
+                  <div class="grain-overlay"></div>
+                </a>
+              `;
+            } else {
+              // Fallback blank box if no image uploaded
+              igHtml += `
+                <a href="https://www.instagram.com/zerocollection_?igsh=emFidHg2NDhmYmZ4" target="_blank" class="img-zoom-container" style="display: block; aspect-ratio: 1/1; background-color: var(--color-black); position: relative; border: 1px solid var(--color-black); text-decoration: none;">
+                  <div class="grain-overlay"></div>
+                </a>
+              `;
+            }
+          });
+          igGrid.innerHTML = igHtml;
+        }
       }
     })
     .catch(err => console.error("Error loading dynamic homepage settings:", err));

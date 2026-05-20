@@ -658,7 +658,7 @@ app.put('/api/homepage', requireAdmin, async (req, res) => {
     const incomingConfig = req.body;
     delete incomingConfig._id;
 
-    const imageFields = ['heroImg', 'saleImg', 'shirtsImg', 'hoodiesImg', 'jacketsImg', 'tshirtsImg'];
+    const imageFields = ['heroImg', 'saleImg', 'shirtsImg', 'hoodiesImg', 'jacketsImg', 'tshirtsImg', 'igImg1', 'igImg2', 'igImg3', 'igImg4', 'igImg5', 'igImg6'];
 
     if (db) {
       let existingConfig = await db.collection('homepage').findOne({ configId: "main" });

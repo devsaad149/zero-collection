@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCookieNotice();
   setupAccordions();
   setActiveNavLink();
+  loadHomepageConfig();
 });
 
 // ── Header Scroll Behavior ──
@@ -249,4 +250,102 @@ function setActiveNavLink() {
       link.classList.remove('active');
     }
   });
+}
+
+// ── Load Dynamic Homepage Config ──
+function loadHomepageConfig() {
+  fetch('/api/homepage')
+    .then(res => res.json())
+    .then(config => {
+      // 1. Update Announcement Bar (on all pages)
+      if (config.announcementBar) {
+        const marqueeSpans = document.querySelectorAll('.announcement-bar .marquee-content span');
+        marqueeSpans.forEach(span => {
+          span.textContent = config.announcementBar;
+        });
+      }
+
+      // 2. Index Page Specifics
+      const isIndex = window.location.pathname === '/' || window.location.pathname.endsWith('index.html') || window.location.pathname.split('/').pop() === '';
+      if (isIndex) {
+        // Hero Section Title
+        const heroTitleEl = document.querySelector('.hero-section h1');
+        if (heroTitleEl && config.heroTitle) {
+          heroTitleEl.innerHTML = config.heroTitle.replace(/\n/g, '<br>');
+        }
+        
+        // Hero Section Subtitle
+        const heroSubtitleEl = document.querySelector('.hero-section p');
+        if (heroSubtitleEl && config.heroSubtitle) {
+          heroSubtitleEl.textContent = config.heroSubtitle;
+        }
+
+        // Hero Section Background
+        const heroSection = document.querySelector('.hero-section');
+        if (heroSection && config.heroImg) {
+          heroSection.style.backgroundImage = `url('${config.heroImg}')`;
+          heroSection.style.backgroundSize = 'cover';
+          heroSection.style.backgroundPosition = 'center';
+        }
+
+        // Category Images
+        applyCategoryImage('catShirts', config.shirtsImg);
+        applyCategoryImage('catHoodies', config.hoodiesImg);
+        applyCategoryImage('catJackets', config.jacketsImg);
+        applyCategoryImage('catTshirts', config.tshirtsImg);
+
+        // Sale Section visibility, title, subtitle & background
+        const saleSection = document.getElementById('saleSection');
+        if (saleSection) {
+          if (config.showSaleSection === false) {
+            saleSection.style.display = 'none';
+          } else {
+            saleSection.style.display = 'block';
+            
+            const saleTitleEl = document.getElementById('saleTitleText');
+            if (saleTitleEl && config.saleTitle) {
+              saleTitleEl.textContent = config.saleTitle;
+            }
+            
+            const saleSubtitleEl = document.getElementById('saleSubtitleText');
+            if (saleSubtitleEl && config.saleSubtitle) {
+              saleSubtitleEl.textContent = config.saleSubtitle;
+            }
+
+            if (config.saleImg) {
+              saleSection.style.backgroundImage = `url('${config.saleImg}')`;
+              saleSection.style.backgroundSize = 'cover';
+              saleSection.style.backgroundPosition = 'center';
+            }
+          }
+        }
+      }
+    })
+    .catch(err => console.error("Error loading dynamic homepage settings:", err));
+}
+
+function applyCategoryImage(containerId, imgPath) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (imgPath) {
+    // Check if there is already a custom img tag, else create one
+    let img = container.querySelector('.category-bg-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'category-bg-img';
+      img.style.position = 'absolute';
+      img.style.top = '0';
+      img.style.left = '0';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.style.zIndex = '1';
+      img.style.opacity = '0.6';
+      img.style.transition = 'transform 0.5s var(--transition-ease)';
+      container.appendChild(img);
+    }
+    img.src = imgPath;
+    img.style.display = 'block';
+  }
 }

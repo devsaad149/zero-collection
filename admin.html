@@ -77,6 +77,67 @@
           <input type="text" id="saleTitle" name="saleTitle" />
           <label for="saleSubtitle">Sale Subtitle</label>
           <input type="text" id="saleSubtitle" name="saleSubtitle" />
+
+          <!-- Image Management Section -->
+          <h4 style="margin-top: 32px; border-bottom: 1px solid var(--color-grey-light); padding-bottom: 8px; font-size: 1.1rem; text-transform: uppercase;">Homepage Banners & Category Images</h4>
+          
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top: 20px;">
+            <div>
+              <label>Hero Section Background Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="heroImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'heroImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('heroImgUpload').click()">Upload File</button>
+                <input type="text" id="heroImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/hero-bg.jpg" />
+              </div>
+            </div>
+            <div>
+              <label>Sale Section Background Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="saleImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'saleImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('saleImgUpload').click()">Upload File</button>
+                <input type="text" id="saleImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/sale-bg.jpg" />
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top: 20px;">
+            <div>
+              <label>Shirts Category Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="shirtsImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'shirtsImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('shirtsImgUpload').click()">Upload File</button>
+                <input type="text" id="shirtsImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/shirt-001.jpg" />
+              </div>
+            </div>
+            <div>
+              <label>Hoodies Category Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="hoodiesImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'hoodiesImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('hoodiesImgUpload').click()">Upload File</button>
+                <input type="text" id="hoodiesImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/hoodie-001.jpg" />
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top: 20px; margin-bottom: 24px;">
+            <div>
+              <label>Jackets Category Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="jacketsImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'jacketsImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('jacketsImgUpload').click()">Upload File</button>
+                <input type="text" id="jacketsImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/jacket-001.jpg" />
+              </div>
+            </div>
+            <div>
+              <label>T-Shirts Category Image</label>
+              <div class="image-upload-wrapper">
+                <input type="file" id="tshirtsImgUpload" accept="image/*" style="display:none;" onchange="handleHomepageImageUpload(event, 'tshirtsImg')" />
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('tshirtsImgUpload').click()">Upload File</button>
+                <input type="text" id="tshirtsImgUrl" style="flex:1; padding:8px; border:1px solid var(--color-grey-light);" placeholder="images/tshirt-001.jpg" />
+              </div>
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-primary">Save Settings</button>
           <p id="homepageSaveMsg" class="success-message" style="display:none;"></p>
         </form>

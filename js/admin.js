@@ -684,12 +684,26 @@ function populateHomepageForm() {
   const saleTitle = document.getElementById('saleTitle');
   const saleSubtitle = document.getElementById('saleSubtitle');
 
+  const heroImgUrl = document.getElementById('heroImgUrl');
+  const saleImgUrl = document.getElementById('saleImgUrl');
+  const shirtsImgUrl = document.getElementById('shirtsImgUrl');
+  const hoodiesImgUrl = document.getElementById('hoodiesImgUrl');
+  const jacketsImgUrl = document.getElementById('jacketsImgUrl');
+  const tshirtsImgUrl = document.getElementById('tshirtsImgUrl');
+
   if (bar) bar.value = homepageConfig.announcementBar || '';
   if (title) title.value = homepageConfig.heroTitle || '';
   if (subtitle) subtitle.value = homepageConfig.heroSubtitle || '';
   if (showSale) showSale.checked = homepageConfig.showSaleSection !== false;
   if (saleTitle) saleTitle.value = homepageConfig.saleTitle || '';
   if (saleSubtitle) saleSubtitle.value = homepageConfig.saleSubtitle || '';
+
+  if (heroImgUrl) heroImgUrl.value = homepageConfig.heroImg || '';
+  if (saleImgUrl) saleImgUrl.value = homepageConfig.saleImg || '';
+  if (shirtsImgUrl) shirtsImgUrl.value = homepageConfig.shirtsImg || '';
+  if (hoodiesImgUrl) hoodiesImgUrl.value = homepageConfig.hoodiesImg || '';
+  if (jacketsImgUrl) jacketsImgUrl.value = homepageConfig.jacketsImg || '';
+  if (tshirtsImgUrl) tshirtsImgUrl.value = homepageConfig.tshirtsImg || '';
 
   // Attach submit handler once
   const form = document.getElementById('homepageForm');
@@ -709,9 +723,17 @@ function saveHomepageConfig() {
   const saleTitle = document.getElementById('saleTitle').value.trim();
   const saleSubtitle = document.getElementById('saleSubtitle').value.trim();
 
+  const heroImg = document.getElementById('heroImgUrl').value.trim();
+  const saleImg = document.getElementById('saleImgUrl').value.trim();
+  const shirtsImg = document.getElementById('shirtsImgUrl').value.trim();
+  const hoodiesImg = document.getElementById('hoodiesImgUrl').value.trim();
+  const jacketsImg = document.getElementById('jacketsImgUrl').value.trim();
+  const tshirtsImg = document.getElementById('tshirtsImgUrl').value.trim();
+
   const configData = {
     announcementBar, heroTitle, heroSubtitle,
-    showSaleSection, saleTitle, saleSubtitle
+    showSaleSection, saleTitle, saleSubtitle,
+    heroImg, saleImg, shirtsImg, hoodiesImg, jacketsImg, tshirtsImg
   };
 
   fetch('/api/homepage', {
@@ -736,3 +758,35 @@ function saveHomepageConfig() {
   })
   .catch(err => alert(err.message));
 }
+
+// Global hook for uploading homepage assets
+window.handleHomepageImageUpload = function(e, key) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  fetch('/api/upload', {
+    method: 'POST',
+    headers: {
+      'x-admin-token': adminToken
+    },
+    body: formData
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw new Error(err.error || 'Upload failed') });
+    }
+    return res.json();
+  })
+  .then(data => {
+    const input = document.getElementById(`${key}Url`);
+    if (input) {
+      input.value = data.imageUrl;
+    }
+  })
+  .catch(err => {
+    alert('Failed to upload homepage image: ' + err.message);
+  });
+};

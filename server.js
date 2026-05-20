@@ -183,6 +183,103 @@ function writeJSON(file, data) {
    API ENDPOINTS
    ========================================================================== */
 
+// ── DIAGNOSTICS & TESTING ──
+app.get('/api/test-db', async (req, res) => {
+  const report = {
+    timestamp: new Date().toISOString(),
+    env: {
+      has_mongodb_uri: !!process.env.MONGODB_URI,
+      masked_mongodb_uri: process.env.MONGODB_URI 
+        ? process.env.MONGODB_URI.replace(/:([^@]+)@/, ':****@') 
+        : null,
+      node_env: process.env.NODE_ENV || 'not set',
+      vercel: !!process.env.VERCEL,
+    },
+    database: {
+      connected: !!db,
+      is_fallback_local: !db,
+    },
+    tests: {
+      products_write: 'not run',
+      products_read: 'not run',
+      products_delete: 'not run',
+      homepage_write: 'not run',
+      homepage_read: 'not run',
+    },
+    errors: {}
+  };
+
+  if (!db) {
+    report.message = "No MongoDB Atlas connection. Running in local fallback mode.";
+    return res.json(report);
+  }
+
+  try {
+    const productsCol = db.collection('products');
+    
+    // Test write
+    const testDoc = { 
+      id: 'test-diagnostic-product',
+      name: 'Test Diagnostic Product', 
+      category: 'tshirts', 
+      price: 999, 
+      isTest: true,
+      timestamp: new Date().toISOString()
+    };
+    
+    report.tests.products_write = 'started';
+    const insertResult = await productsCol.insertOne(testDoc);
+    report.tests.products_write = `success (insertedId: ${insertResult.insertedId})`;
+
+    // Test read
+    report.tests.products_read = 'started';
+    const foundDoc = await productsCol.findOne({ id: 'test-diagnostic-product' });
+    if (foundDoc) {
+      report.tests.products_read = `success (found product with id: ${foundDoc.id})`;
+    } else {
+      report.tests.products_read = 'failed: product not found after insert';
+    }
+
+    // Test delete
+    report.tests.products_delete = 'started';
+    const deleteResult = await productsCol.deleteOne({ id: 'test-diagnostic-product' });
+    report.tests.products_delete = `success (deletedCount: ${deleteResult.deletedCount})`;
+
+  } catch (err) {
+    report.tests.products_write = 'failed';
+    report.tests.products_write_error = err.message;
+    report.errors.products_phase = err.stack;
+  }
+
+  try {
+    const homepageCol = db.collection('homepage');
+    
+    // Test read
+    report.tests.homepage_read = 'started';
+    const homeDoc = await homepageCol.findOne({});
+    report.tests.homepage_read = `success (found announcement: ${homeDoc ? homeDoc.announcementBar : 'none'})`;
+
+    // Test write/update (non-destructive test by writing back a diagnostic timestamp)
+    if (homeDoc) {
+      report.tests.homepage_write = 'started';
+      const updateResult = await homepageCol.updateOne(
+        { _id: homeDoc._id },
+        { $set: { lastDiagnosticCheck: new Date().toISOString() } }
+      );
+      report.tests.homepage_write = `success (modifiedCount: ${updateResult.modifiedCount})`;
+    } else {
+      report.tests.homepage_write = 'failed: homepage doc not found to test update';
+    }
+
+  } catch (err) {
+    report.tests.homepage_write = 'failed';
+    report.tests.homepage_write_error = err.message;
+    report.errors.homepage_phase = err.stack;
+  }
+
+  res.json(report);
+});
+
 // ── AUTHENTICATION ──
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;

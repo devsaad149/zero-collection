@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zero Collection Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Login Section -->
+    <section id="loginSection" class="admin-section">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="admin-form">
+        <label for="adminUser">Username</label>
+        <input type="text" id="adminUser" name="username" required />
+        <label for="adminPass">Password</label>
+        <input type="password" id="adminPass" name="password" required />
+        <button type="submit" class="btn btn-primary">Login</button>
+        <p id="loginError" class="error-message" style="display:none;"></p>
+      </form>
+    </section>
+
+    <!-- Main Dashboard (hidden until login) -->
+    <section id="dashboardSection" class="admin-section" style="display:none;">
+      <nav class="admin-nav">
+        <button class="admin-tab active" data-target="productsPanel">Products</button>
+        <button class="admin-tab" data-target="ordersPanel">Orders</button>
+        <button class="admin-tab" data-target="homepagePanel">Homepage</button>
+        <button id="logoutBtn" class="admin-logout">Logout</button>
+      </nav>
+
+      <!-- Products Management Panel -->
+      <div id="productsPanel" class="admin-panel">
+        <h3>Product Management</h3>
+        <button id="addProductBtn" class="btn btn-secondary">Add New Product</button>
+        <table class="admin-table" id="productsTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Sale</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div id="productFormContainer" class="admin-form-container" style="display:none;"></div>
+      </div>
+
+      <!-- Orders Management Panel -->
+      <div id="ordersPanel" class="admin-panel" style="display:none;">
+        <h3>Order Management</h3>
+        <table class="admin-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th><th>Date</th><th>Status</th><th>Customer</th><th>Total</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div id="orderDetailContainer" class="admin-detail" style="display:none;"></div>
+      </div>
+
+      <!-- Homepage Configuration Panel -->
+      <div id="homepagePanel" class="admin-panel" style="display:none;">
+        <h3>Homepage Settings</h3>
+        <form id="homepageForm" class="admin-form">
+          <label for="announcementBar">Announcement Bar</label>
+          <input type="text" id="announcementBar" name="announcementBar" />
+          <label for="heroTitle">Hero Title</label>
+          <textarea id="heroTitle" name="heroTitle" rows="2"></textarea>
+          <label for="heroSubtitle">Hero Subtitle</label>
+          <textarea id="heroSubtitle" name="heroSubtitle" rows="2"></textarea>
+          <label for="showSaleSection">
+            <input type="checkbox" id="showSaleSection" name="showSaleSection" /> Show Sale Section
+          </label>
+          <label for="saleTitle">Sale Title</label>
+          <input type="text" id="saleTitle" name="saleTitle" />
+          <label for="saleSubtitle">Sale Subtitle</label>
+          <input type="text" id="saleSubtitle" name="saleSubtitle" />
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+          <p id="homepageSaveMsg" class="success-message" style="display:none;"></p>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

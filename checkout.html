@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — ZERO COLLECTION</title>
+  <meta name="description" content="Complete your order at Zero Collection. Cash on Delivery across Pakistan. Secure checkout.">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
+  <link rel="stylesheet" href="css/animations.css?v=2">
+
+  <style>
+    /* Checkout Layout Styles */
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 48px;
+      margin-top: 40px;
+    }
+
+    .checkout-form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .checkout-header {
+      text-align: center;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--color-grey-light);
+    }
+
+    .checkout-header .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--color-black);
+      text-decoration: none;
+    }
+
+    .checkout-panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-black);
+    }
+
+    .form-group-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-control-error {
+      color: #D32F2F;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .input-error-state {
+      border-color: #D32F2F !important;
+    }
+
+    .order-summary-sidebar {
+      background-color: #F9F9F9;
+      border: 1px solid var(--color-grey-light);
+      padding: 32px;
+      position: sticky;
+      top: 120px;
+      height: fit-content;
+    }
+
+    .checkout-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 24px;
+      padding-right: 8px;
+    }
+
+    .checkout-item-card {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--color-grey-light);
+    }
+
+    .checkout-item-img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      background-color: var(--color-grey-light);
+      border: 1px solid var(--color-grey-light);
+    }
+
+    .checkout-item-details {
+      flex: 1;
+    }
+
+    .checkout-item-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: var(--color-black);
+    }
+
+    .checkout-item-meta {
+      font-size: 0.75rem;
+      color: var(--color-grey-dark);
+      text-transform: uppercase;
+    }
+
+    .checkout-item-price {
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .promo-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--color-grey-light);
+    }
+
+    .cod-method-card {
+      border: 1px solid var(--color-black);
+      padding: 20px;
+      background-color: #FAFAFA;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 16px;
+    }
+
+    .cod-radio {
+      accent-color: var(--color-black);
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    .cod-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cod-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cod-desc {
+      font-size: 0.8rem;
+      color: var(--color-grey-dark);
+      line-height: 1.4;
+    }
+
+    .back-to-shop-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-black);
+      text-decoration: none;
+      margin-top: 24px;
+    }
+
+    .back-to-shop-link svg {
+      width: 14px;
+      height: 14px;
+      transform: rotate(180deg);
+      transition: transform 0.2s ease;
+    }
+
+    .back-to-shop-link:hover svg {
+      transform: rotate(180deg) translateX(4px);
+    }
+
+    @media (max-width: 900px) {
+      .checkout-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .order-summary-sidebar {
+        position: static;
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal Checkout Header -->
+  <header class="checkout-header">
+    <div class="container">
+      <a href="index.html" class="logo">ZERO COLLECTION</a>
+    </div>
+  </header>
+
+  <main class="container mb-80">
+    
+    <div class="checkout-layout">
+      
+      <!-- Left Column: Shipping & Payment Form -->
+      <div class="checkout-form-section">
+        
+        <a href="index.html" class="back-to-shop-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          Continue Shopping
+        </a>
+
+        <!-- Shipping details form -->
+        <form id="checkoutForm" novalidate>
+          
+          <div>
+            <h2 class="checkout-panel-title">1. Shipping Information</h2>
+            
+            <div class="form-group mb-16">
+              <label for="fullName" class="form-label">Full Name *</label>
+              <input type="text" id="fullName" class="form-input" placeholder="e.g. Muhammad Ali" required>
+              <div class="form-control-error" id="fullNameError">Full name is required.</div>
+            </div>
+
+            <div class="form-group-row mb-16">
+              <div class="form-group">
+                <label for="email" class="form-label">Email Address *</label>
+                <input type="email" id="email" class="form-input" placeholder="ali@gmail.com" required>
+                <div class="form-control-error" id="emailError">Enter a valid email address.</div>
+              </div>
+              <div class="form-group">
+                <label for="phone" class="form-label">Mobile Number *</label>
+                <input type="tel" id="phone" class="form-input" placeholder="e.g. 03001234567" required>
+                <div class="form-control-error" id="phoneError">Enter a valid Pakistan mobile number (e.g. 03001234567).</div>
+              </div>
+            </div>
+
+            <div class="form-group mb-16">
+              <label for="address" class="form-label">Complete Street Address *</label>
+              <input type="text" id="address" class="form-input" placeholder="House number, Street name, Area/Sector" required>
+              <div class="form-control-error" id="addressError">Shipping address is required.</div>
+            </div>
+
+            <div class="form-group mb-16">
+              <label for="city" class="form-label">City *</label>
+              <select id="city" class="form-select" required>
+                <option value="" disabled selected>Select your city</option>
+                <option value="Karachi">Karachi</option>
+                <option value="Lahore">Lahore</option>
+                <option value="Islamabad">Islamabad</option>
+                <option value="Rawalpindi">Rawalpindi</option>
+                <option value="Faisalabad">Faisalabad</option>
+                <option value="Multan">Multan</option>
+                <option value="Peshawar">Peshawar</option>
+                <option value="Quetta">Quetta</option>
+                <option value="Sialkot">Sialkot</option>
+                <option value="Gujranwala">Gujranwala</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Other">Other City</option>
+              </select>
+              <div class="form-control-error" id="cityError">Please select a city.</div>
+            </div>
+
+          </div>
+
+          <div style="margin-top: 40px;">
+            <h2 class="checkout-panel-title">2. Payment Method</h2>
+            
+            <div class="cod-method-card">
+              <input type="radio" name="paymentMethod" id="codMethod" class="cod-radio" checked>
+              <div class="cod-details">
+                <label for="codMethod" class="cod-title">Cash on Delivery (COD)</label>
+                <span class="cod-desc">Pay in cash when our courier partner (Leopards / TCS) delivers the package to your doorstep. Free delivery on orders PKR 2,999+.</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 48px;">
+            <button type="submit" class="btn btn-primary btn-full uppercase" style="font-size: 1rem; padding: 18px 24px;" id="submitOrderBtn">
+              <span id="btnText">Complete Order (Cash on Delivery)</span>
+              <!-- visual spinner helper -->
+              <span id="btnSpinner" style="display:none; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite;"></span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Right Column: Order Summary Sidebar -->
+      <div class="order-summary-sidebar">
+        <h2 class="checkout-panel-title" style="margin-bottom: 24px;">Order Summary</h2>
+        
+        <!-- Cart Items List Container -->
+        <div class="checkout-items-list" id="checkoutItemsContainer">
+          <!-- Populated dynamically via checkout.js -->
+        </div>
+
+        <!-- Promo Code Section -->
+        <div class="promo-input-group">
+          <input type="text" class="form-input" id="promoInput" placeholder="DISCOUNT CODE (e.g. ZERO10)" style="margin-bottom: 0;">
+          <button class="btn btn-outline" id="promoApplyBtn" style="padding: 0 24px; white-space: nowrap;">Apply</button>
+        </div>
+        <div id="promoMessage" class="uppercase font-bold" style="font-size: 0.75rem; letter-spacing: 0.05em; margin-top: -16px; margin-bottom: 20px; display: none;"></div>
+
+        <!-- Summary Totals -->
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--color-black); padding-bottom: 20px; margin-bottom: 20px;">
+          <div class="flex-between">
+            <span style="color: var(--color-grey-dark);">SUBTOTAL</span>
+            <span id="checkoutSubtotal" class="font-bold">PKR 0</span>
+          </div>
+          
+          <div class="flex-between" id="discountRow" style="display: none; color: #D32F2F;">
+            <span>DISCOUNT (<span id="discountName"></span>)</span>
+            <span id="checkoutDiscount">-PKR 0</span>
+          </div>
+
+          <div class="flex-between">
+            <span style="color: var(--color-grey-dark);">DELIVERY CHARGES</span>
+            <span id="checkoutShipping" class="font-bold">PKR 0</span>
+          </div>
+        </div>
+
+        <div class="flex-between font-extra-bold" style="font-size: 1.2rem; letter-spacing: 0.02em;">
+          <span>TOTAL</span>
+          <span id="checkoutTotal">PKR 0</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- Scripts -->
+  <script src="js/products.js?v=2"></script>
+  <script src="js/cart.js?v=2"></script>
+  <script src="js/checkout.js?v=2"></script>
+</body>
+</html>

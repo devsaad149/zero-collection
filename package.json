@@ -1,0 +1,13 @@
+{
+  "name": "zero-collection",
+  "version": "1.0.0",
+  "description": "Zero Collection E-commerce website backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

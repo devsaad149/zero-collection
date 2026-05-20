@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — ZERO COLLECTION</title>
+  <meta name="description" content="Thank you for your order at Zero Collection. Order confirmation details.">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
+  <link rel="stylesheet" href="css/animations.css?v=2">
+
+  <style>
+    .confirm-container {
+      max-width: 680px;
+      margin: 40px auto 80px auto;
+      padding: 0 16px;
+    }
+
+    .confirm-header-logo {
+      text-align: center;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--color-grey-light);
+      margin-bottom: 40px;
+    }
+
+    .confirm-header-logo .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--color-black);
+      text-decoration: none;
+    }
+
+    .confirm-card {
+      border: 1px solid var(--color-black);
+      padding: 40px;
+      text-align: center;
+      background-color: var(--color-white);
+      margin-bottom: 32px;
+    }
+
+    .success-icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid var(--color-black);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .success-icon-wrapper svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--color-black);
+      stroke-width: 2.5px;
+      fill: none;
+    }
+
+    .confirm-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .confirm-subtitle {
+      font-size: 0.95rem;
+      color: var(--color-grey-dark);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .order-reference-box {
+      background-color: #F9F9F9;
+      border: 1px solid var(--color-grey-light);
+      padding: 16px;
+      font-family: monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .confirm-details-panel {
+      border: 1px solid var(--color-grey-light);
+      padding: 32px;
+      background-color: #FAFAFA;
+      margin-bottom: 40px;
+    }
+
+    .confirm-panel-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--color-grey-light);
+      padding-bottom: 8px;
+    }
+
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .confirm-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .confirm-row-title {
+      font-weight: 700;
+      color: var(--color-black);
+      text-transform: uppercase;
+      min-width: 140px;
+    }
+
+    .confirm-row-value {
+      text-align: right;
+      color: var(--color-grey-dark);
+    }
+
+    .confirm-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+      border-top: 1px solid var(--color-grey-light);
+      padding-top: 16px;
+    }
+
+    .confirm-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .confirm-item-info {
+      text-align: left;
+    }
+
+    .confirm-item-name {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .confirm-item-meta {
+      font-size: 0.75rem;
+      color: var(--color-grey);
+      margin-top: 2px;
+    }
+
+    .confirm-item-price {
+      font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+      .confirm-card {
+        padding: 24px;
+      }
+      .confirm-details-panel {
+        padding: 20px;
+      }
+      .confirm-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .confirm-row-value {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal Header -->
+  <header class="confirm-header-logo">
+    <div class="container">
+      <a href="index.html" class="logo">ZERO COLLECTION</a>
+    </div>
+  </header>
+
+  <main class="confirm-container">
+    
+    <!-- Success Statement Card -->
+    <div class="confirm-card">
+      <div class="success-icon-wrapper">
+        <svg viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+
+      <h1 class="confirm-title">Order Confirmed!</h1>
+      <p class="confirm-subtitle">
+        Thank you for choosing Zero Collection. Your order has been registered successfully.
+      </p>
+
+      <div class="order-reference-box">
+        ORDER ID: <span id="displayOrderId">#ZC-000000</span>
+      </div>
+      
+      <p style="font-size: 0.8rem; color: var(--color-grey); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 12px;">
+        A verification WhatsApp / Call will be made to your phone number <strong id="displayPhone"></strong> before dispatching your package.
+      </p>
+    </div>
+
+    <!-- Receipt Details Block -->
+    <div class="confirm-details-panel">
+      <h2 class="confirm-panel-title">Delivery Details</h2>
+      
+      <div class="confirm-row">
+        <span class="confirm-row-title">Recipient Name</span>
+        <span class="confirm-row-value" id="displayName">Loading...</span>
+      </div>
+
+      <div class="confirm-row">
+        <span class="confirm-row-title">Phone Number</span>
+        <span class="confirm-row-value" id="displayDetailPhone">Loading...</span>
+      </div>
+
+      <div class="confirm-row">
+        <span class="confirm-row-title">Shipping Address</span>
+        <span class="confirm-row-value" id="displayAddress">Loading...</span>
+      </div>
+
+      <div class="confirm-row">
+        <span class="confirm-row-title">City</span>
+        <span class="confirm-row-value" id="displayCity">Loading...</span>
+      </div>
+
+      <div class="confirm-row">
+        <span class="confirm-row-title">Payment Method</span>
+        <span class="confirm-row-value">Cash on Delivery (COD)</span>
+      </div>
+
+      <!-- Financial Breakdown -->
+      <h2 class="confirm-panel-title" style="margin-top: 24px;">Bill Breakdown</h2>
+      
+      <div class="confirm-row">
+        <span class="confirm-row-title">Subtotal</span>
+        <span class="confirm-row-value" id="displaySubtotal">PKR 0</span>
+      </div>
+
+      <div class="confirm-row" id="displayDiscountRow" style="display: none;">
+        <span class="confirm-row-title">Discount (<span id="displayDiscountCode"></span>)</span>
+        <span class="confirm-row-value" id="displayDiscount" style="color: #D32F2F;">-PKR 0</span>
+      </div>
+
+      <div class="confirm-row">
+        <span class="confirm-row-title">Delivery Fee</span>
+        <span class="confirm-row-value" id="displayShipping">PKR 0</span>
+      </div>
+
+      <div class="confirm-row font-bold" style="font-size: 1rem; margin-top: 8px; border-top: 1px solid var(--color-grey-light); padding-top: 8px;">
+        <span class="confirm-row-title" style="color: var(--color-black);">Total Bill</span>
+        <span class="confirm-row-value" id="displayTotal" style="color: var(--color-black); font-weight: 900;">PKR 0</span>
+      </div>
+
+      <!-- Items Ordered -->
+      <h2 class="confirm-panel-title" style="margin-top: 24px;">Items Ordered</h2>
+      <div class="confirm-items-list" id="confirmItemsContainer">
+        <!-- populated dynamically via page JS -->
+      </div>
+    </div>
+
+    <!-- Actions CTA -->
+    <div class="text-center">
+      <a href="index.html" class="btn btn-primary uppercase" style="padding: 16px 40px; display: inline-block;">Continue Shopping</a>
+      <p style="font-size: 0.8rem; color: var(--color-grey); margin-top: 24px; text-transform: uppercase; letter-spacing: 0.1em;">
+        Follow us on Instagram <a href="#" style="color: var(--color-black); font-weight: 700; text-decoration: underline;">@zerocollection</a> for updates.
+      </p>
+    </div>
+
+  </main>
+
+  <!-- Self-contained Receipt Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Read the last placed order from localStorage
+      const lastOrderStr = localStorage.getItem("lastOrder");
+      
+      if (!lastOrderStr) {
+        // Redirect to homepage if no active order is found
+        window.location.href = "index.html";
+        return;
+      }
+
+      try {
+        const order = JSON.parse(lastOrderStr);
+        
+        // 2. Populate text details
+        document.getElementById("displayOrderId").textContent = order.orderId;
+        document.getElementById("displayPhone").textContent = order.shippingInfo.phone;
+        document.getElementById("displayName").textContent = order.shippingInfo.fullName;
+        document.getElementById("displayDetailPhone").textContent = order.shippingInfo.phone;
+        document.getElementById("displayAddress").textContent = order.shippingInfo.address;
+        document.getElementById("displayCity").textContent = order.shippingInfo.city;
+
+        // 3. Financial breakdown formatting
+        document.getElementById("displaySubtotal").textContent = `PKR ${order.financials.subtotal.toLocaleString()}`;
+        
+        if (order.financials.discount > 0) {
+          document.getElementById("displayDiscountCode").textContent = order.financials.promoCode || "PROMO";
+          document.getElementById("displayDiscount").textContent = `-PKR ${order.financials.discount.toLocaleString()}`;
+          document.getElementById("displayDiscountRow").style.display = "flex";
+        }
+        
+        const shippingVal = order.financials.shipping;
+        document.getElementById("displayShipping").textContent = shippingVal === 0 ? "FREE" : `PKR ${shippingVal}`;
+        document.getElementById("displayTotal").textContent = `PKR ${order.financials.total.toLocaleString()}`;
+
+        // 4. Render items list
+        const itemsContainer = document.getElementById("confirmItemsContainer");
+        itemsContainer.innerHTML = ""; // clear loading states
+        
+        order.items.forEach(item => {
+          const row = document.createElement("div");
+          row.className = "confirm-item-row";
+          
+          row.innerHTML = `
+            <div class="confirm-item-info">
+              <div class="confirm-item-name">${item.name}</div>
+              <div class="confirm-item-meta">Size: ${item.size} &middot; Qty: ${item.qty}</div>
+            </div>
+            <div class="confirm-item-price">PKR ${(item.price * item.qty).toLocaleString()}</div>
+          `;
+          
+          itemsContainer.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Error reading confirm order data:", err);
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+
+</body>
+</html>

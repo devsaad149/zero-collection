@@ -1,0 +1,495 @@
+[
+  {
+    "id": "shirt-001",
+    "name": "Essential Oversized Shirt",
+    "category": "shirts",
+    "price": 3499,
+    "salePrice": 2299,
+    "onSale": true,
+    "gsm": "200 GSM Premium Cotton",
+    "fit": "Oversized Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/shirt-001.jpg"
+    ],
+    "description": "A bold oversized shirt crafted from 200 GSM premium cotton. Clean lines, dropped shoulders, and a relaxed silhouette that redefines casual wear.",
+    "features": [
+      "200 GSM Premium Cotton",
+      "Oversized relaxed fit",
+      "Dropped shoulder design",
+      "Reinforced button placket",
+      "Pre-shrunk fabric"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-01"
+  },
+  {
+    "id": "shirt-002",
+    "name": "Monochrome Utility Shirt",
+    "category": "shirts",
+    "price": 3999,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "220 GSM Cotton Twill",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/shirt-002.jpg"
+    ],
+    "description": "Utility-inspired design with dual chest pockets and a structured collar. Built from heavyweight cotton twill for lasting durability.",
+    "features": [
+      "220 GSM Cotton Twill",
+      "Regular structured fit",
+      "Dual chest utility pockets",
+      "Matte black snap buttons",
+      "Embroidered Zero Collection logo"
+    ],
+    "featured": false,
+    "dateAdded": "2025-04-15"
+  },
+  {
+    "id": "shirt-003",
+    "name": "Void Linen Shirt",
+    "category": "shirts",
+    "price": 4299,
+    "salePrice": 2999,
+    "onSale": true,
+    "gsm": "180 GSM Linen Blend",
+    "fit": "Relaxed Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "images/shirt-003.jpg"
+    ],
+    "description": "Breathable linen-blend shirt with a minimal aesthetic. Perfect for warm weather with a relaxed drape and clean finish.",
+    "features": [
+      "180 GSM Linen-Cotton Blend",
+      "Relaxed breathable fit",
+      "Mandarin collar",
+      "Side slits at hem",
+      "Natural texture finish"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-10"
+  },
+  {
+    "id": "shirt-004",
+    "name": "Street Cargo Shirt",
+    "category": "shirts",
+    "price": 4499,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "240 GSM Ripstop Cotton",
+    "fit": "Boxy Fit",
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/shirt-004.jpg"
+    ],
+    "description": "Streetwear meets function. Heavy-duty ripstop cotton with cargo-style pockets and a boxy, structured fit.",
+    "features": [
+      "240 GSM Ripstop Cotton",
+      "Boxy structured fit",
+      "Multiple cargo pockets",
+      "Hidden snap closure",
+      "Woven Zero Collection label"
+    ],
+    "featured": false,
+    "dateAdded": "2025-03-20"
+  },
+  {
+    "id": "shirt-005",
+    "name": "Void Minimalist Shirt",
+    "category": "shirts",
+    "price": 3799,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "210 GSM Cotton",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/shirt-005-1.jpg",
+      "images/shirt-005-2.jpg",
+      "images/shirt-005-3.jpg",
+      "images/shirt-005-4.jpg",
+      "images/shirt-005-5.jpg"
+    ],
+    "description": "A stark, minimal black shirt with subtle texture. Crafted from 210 GSM premium cotton for a sleek, structured silhouette.",
+    "features": [
+      "210 GSM Premium Cotton",
+      "Regular fit minimal design",
+      "All-black monochrome aesthetic",
+      "Subtle tonal stitching",
+      "Smooth matte finish"
+    ],
+    "featured": false,
+    "dateAdded": "2025-05-20"
+  },
+  {
+    "id": "hoodie-001",
+    "name": "Core Heavyweight Hoodie",
+    "category": "hoodies",
+    "price": 5999,
+    "salePrice": 4499,
+    "onSale": true,
+    "gsm": "370 GSM PC Fleece",
+    "fit": "Oversized Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/hoodie-001.jpg"
+    ],
+    "description": "The heavyweight essential. 370 GSM polyester-cotton fleece with a brushed interior, oversized hood, and kangaroo pocket. Built for comfort and presence.",
+    "features": [
+      "370 GSM PC Fleece",
+      "Oversized relaxed fit",
+      "Brushed fleece interior",
+      "Oversized adjustable hood",
+      "Kangaroo front pocket",
+      "Ribbed cuffs and hem"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-05"
+  },
+  {
+    "id": "hoodie-002",
+    "name": "Blank Void Hoodie",
+    "category": "hoodies",
+    "price": 5499,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "350 GSM French Terry",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/hoodie-002.jpg"
+    ],
+    "description": "Clean, minimal, unbranded. A blank canvas hoodie in premium French Terry with a refined silhouette. No logos, just quality.",
+    "features": [
+      "350 GSM French Terry",
+      "Regular modern fit",
+      "Double-layered hood",
+      "Split kangaroo pocket",
+      "YKK metal aglets on drawcords",
+      "No external branding"
+    ],
+    "featured": false,
+    "dateAdded": "2025-04-01"
+  },
+  {
+    "id": "hoodie-003",
+    "name": "Street Pullover Hoodie",
+    "category": "hoodies",
+    "price": 6499,
+    "salePrice": 4999,
+    "onSale": true,
+    "gsm": "400 GSM Heavy Fleece",
+    "fit": "Oversized Fit",
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/hoodie-003.jpg"
+    ],
+    "description": "Ultra-heavyweight 400 GSM fleece pullover with bold embroidered branding. Oversized fit with exaggerated proportions for maximum street impact.",
+    "features": [
+      "400 GSM Heavy Fleece",
+      "Oversized exaggerated fit",
+      "Embroidered 'ZERO' on chest",
+      "Triple-stitched seams",
+      "Heavy-duty ribbed cuffs",
+      "Dropped shoulder construction"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-12"
+  },
+  {
+    "id": "jacket-001",
+    "name": "Zero Varsity Jacket",
+    "category": "jackets",
+    "price": 8999,
+    "salePrice": 6999,
+    "onSale": true,
+    "gsm": "300 GSM Wool Blend",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/jacket-001.jpg"
+    ],
+    "description": "Classic varsity silhouette reimagined in monochrome. Premium wool-blend body with faux leather sleeves and custom snap buttons.",
+    "features": [
+      "300 GSM Wool Blend Body",
+      "Faux leather sleeves",
+      "Regular structured fit",
+      "Custom 'Z' snap buttons",
+      "Embroidered back patch",
+      "Satin interior lining",
+      "Ribbed collar, cuffs and hem"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-08"
+  },
+  {
+    "id": "jacket-002",
+    "name": "Urban Windbreaker",
+    "category": "jackets",
+    "price": 6999,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "150 GSM Nylon",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "images/jacket-002.jpg"
+    ],
+    "description": "Lightweight, water-resistant nylon windbreaker with a half-zip closure. Packable into its own pocket. Essential for unpredictable weather.",
+    "features": [
+      "150 GSM Ripstop Nylon",
+      "Water-resistant DWR coating",
+      "Regular fit with cinch hem",
+      "Half-zip closure",
+      "Packable into chest pocket",
+      "Reflective Zero Collection logo"
+    ],
+    "featured": false,
+    "dateAdded": "2025-03-25"
+  },
+  {
+    "id": "jacket-003",
+    "name": "Tactical Shell Jacket",
+    "category": "jackets",
+    "price": 9499,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "200 GSM Technical Shell",
+    "fit": "Relaxed Fit",
+    "sizes": [
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/jacket-003.jpg"
+    ],
+    "description": "Technical outerwear meets streetwear. Waterproof shell with sealed seams, adjustable hood, and multiple utility pockets.",
+    "features": [
+      "200 GSM Technical Shell Fabric",
+      "Fully waterproof sealed seams",
+      "Relaxed contemporary fit",
+      "Adjustable storm hood",
+      "Multiple zip utility pockets",
+      "Velcro-adjustable cuffs",
+      "Mesh interior lining"
+    ],
+    "featured": false,
+    "dateAdded": "2025-04-20"
+  },
+  {
+    "id": "tshirt-001",
+    "name": "Clean Fit Polo Tee",
+    "category": "tshirts",
+    "price": 2499,
+    "salePrice": 1799,
+    "onSale": true,
+    "gsm": "220 GSM Pique Cotton",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/tshirt-001-1.jpg",
+      "images/tshirt-001-2.jpg",
+      "images/tshirt-001-3.jpg",
+      "images/tshirt-001-4.jpg",
+      "images/tshirt-001-5.jpg"
+    ],
+    "description": "A premium short-sleeve collared tee with button-down front closure. Built from a breathable pique cotton-blend that offers natural stretch and holds its shape.",
+    "features": [
+      "220 GSM Pique Cotton",
+      "Regular fit polo shirt",
+      "Six button front placket",
+      "Stark spread collar",
+      "Tone-on-tone button detailing"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-15"
+  },
+  {
+    "id": "tshirt-002",
+    "name": "Void Black Polo Tee",
+    "category": "tshirts",
+    "price": 2999,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "220 GSM Pique Cotton",
+    "fit": "Regular Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/tshirt-002-1.jpg",
+      "images/tshirt-002-2.jpg",
+      "images/tshirt-002-3.jpg"
+    ],
+    "description": "The all-black edition of our signature collared polo. A sharp short-sleeve button-down built from 220 GSM pique cotton for a refined, minimal look.",
+    "features": [
+      "220 GSM Pique Cotton",
+      "Regular fit collared polo",
+      "Six button front placket",
+      "Tonal black buttons",
+      "Double-stitched sleeve hem"
+    ],
+    "featured": false,
+    "dateAdded": "2025-04-10"
+  },
+  {
+    "id": "tshirt-003",
+    "name": "Void Graphic Tee",
+    "category": "tshirts",
+    "price": 3299,
+    "salePrice": 2499,
+    "onSale": true,
+    "gsm": "200 GSM Cotton",
+    "fit": "Oversized Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/tshirt-003.jpg"
+    ],
+    "description": "Bold 'WEAR THE VOID' graphic print on the back with a small logo on the front chest. Statement piece for the fearless.",
+    "features": [
+      "200 GSM Premium Cotton",
+      "Oversized relaxed fit",
+      "DTG printed back graphic",
+      "Small chest logo print",
+      "Ribbed collar band"
+    ],
+    "featured": true,
+    "dateAdded": "2025-05-18"
+  },
+  {
+    "id": "tshirt-004",
+    "name": "Raw Edge Tee",
+    "category": "tshirts",
+    "price": 2799,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "190 GSM Slub Cotton",
+    "fit": "Relaxed Fit",
+    "sizes": [
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "images": [
+      "images/tshirt-004.jpg"
+    ],
+    "description": "Raw-edge hems and a deconstructed aesthetic. Slub cotton gives each piece a unique texture. For those who appreciate the unfinished look.",
+    "features": [
+      "190 GSM Slub Cotton",
+      "Relaxed fit",
+      "Raw-edge hem and sleeves",
+      "Exposed seam detailing",
+      "Garment-dyed finish"
+    ],
+    "featured": false,
+    "dateAdded": "2025-04-05"
+  },
+  {
+    "id": "tshirt-005",
+    "name": "Zero Logo Tee",
+    "category": "tshirts",
+    "price": 2499,
+    "salePrice": null,
+    "onSale": false,
+    "gsm": "180 GSM Cotton",
+    "fit": "Regular Fit",
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL"
+    ],
+    "images": [
+      "images/tshirt-005.jpg"
+    ],
+    "description": "Classic crew-neck tee featuring the Zero Collection logo front and center. The signature piece of the collection.",
+    "features": [
+      "180 GSM Premium Cotton",
+      "Regular fit",
+      "Screen-printed logo",
+      "Taped neck seam",
+      "Side-seamed construction"
+    ],
+    "featured": false,
+    "dateAdded": "2025-03-15"
+  }
+]

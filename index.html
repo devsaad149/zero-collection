@@ -415,49 +415,51 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const grid = document.getElementById('homeNewArrivalsGrid');
-      if (grid && typeof PRODUCTS !== 'undefined') {
-        const featured = getFeaturedProducts().slice(0, 4);
-        let html = '';
-        featured.forEach(product => {
-          const isSale = product.onSale && product.salePrice;
-          const originalPriceFormatted = formatPrice(product.price);
-          const displayPriceFormatted = formatPrice(isSale ? product.salePrice : product.price);
-          const badgeHtml = isSale ? `<span class="badge badge-sale product-card-badge">SALE</span>` : '';
-          
-          const priceDisplayHtml = isSale 
-            ? `<span class="product-card-compare-price">${originalPriceFormatted}</span>
-               <span class="product-card-price">${displayPriceFormatted}</span>`
-            : `<span class="product-card-price">${displayPriceFormatted}</span>`;
+      if (grid && typeof onProductsLoaded === 'function') {
+        onProductsLoaded(() => {
+          const featured = getFeaturedProducts().slice(0, 4);
+          let html = '';
+          featured.forEach(product => {
+            const isSale = product.onSale && product.salePrice;
+            const originalPriceFormatted = formatPrice(product.price);
+            const displayPriceFormatted = formatPrice(isSale ? product.salePrice : product.price);
+            const badgeHtml = isSale ? `<span class="badge badge-sale product-card-badge">SALE</span>` : '';
+            
+            const priceDisplayHtml = isSale 
+              ? `<span class="product-card-compare-price">${originalPriceFormatted}</span>
+                 <span class="product-card-price">${displayPriceFormatted}</span>`
+              : `<span class="product-card-price">${displayPriceFormatted}</span>`;
 
-          const defaultSize = product.sizes[0] || 'M';
+            const defaultSize = product.sizes[0] || 'M';
 
-          html += `
-            <article class="product-card">
-              <div class="product-card-image-wrapper img-zoom-container">
-                <a href="product.html?id=${product.id}">
-                  <img src="${product.images[0]}" alt="${product.name}" class="product-card-image" loading="lazy">
-                </a>
-                ${badgeHtml}
-                <div class="product-card-hover-actions">
-                  <button class="btn btn-primary btn-full btn-sm uppercase" onclick="event.preventDefault(); addToCart('${product.id}', '${defaultSize}', 1)">
-                    Add To Cart
-                  </button>
+            html += `
+              <article class="product-card">
+                <div class="product-card-image-wrapper img-zoom-container">
+                  <a href="product.html?id=${product.id}">
+                    <img src="${product.images[0]}" alt="${product.name}" class="product-card-image" loading="lazy">
+                  </a>
+                  ${badgeHtml}
+                  <div class="product-card-hover-actions">
+                    <button class="btn btn-primary btn-full btn-sm uppercase" onclick="event.preventDefault(); addToCart('${product.id}', '${defaultSize}', 1)">
+                      Add To Cart
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div class="product-card-info">
-                <span class="product-card-category">${product.category}</span>
-                <h3 class="product-card-title uppercase">
-                  <a href="product.html?id=${product.id}">${product.name}</a>
-                </h3>
-                <div class="product-card-price-wrapper">
-                  ${priceDisplayHtml}
+                <div class="product-card-info">
+                  <span class="product-card-category">${product.category}</span>
+                  <h3 class="product-card-title uppercase">
+                    <a href="product.html?id=${product.id}">${product.name}</a>
+                  </h3>
+                  <div class="product-card-price-wrapper">
+                    ${priceDisplayHtml}
+                  </div>
+                  ${product.gsm ? `<div class="product-card-gsm">${product.gsm}</div>` : ''}
                 </div>
-                ${product.gsm ? `<div class="product-card-gsm">${product.gsm}</div>` : ''}
-              </div>
-            </article>
-          `;
+              </article>
+            `;
+          });
+          grid.innerHTML = html;
         });
-        grid.innerHTML = html;
       }
     });
   </script>

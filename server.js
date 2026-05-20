@@ -381,6 +381,7 @@ app.put('/api/products/:id', requireAdmin, async (req, res) => {
     delete updateData._id; // Ensure internal Mongo DB ID is not overwritten
 
     const updatedProduct = { ...existingProduct, ...updateData };
+    delete updatedProduct._id; // Prevent Mongo immutable _id field write exception
     updatedProduct.price = Number(updatedProduct.price);
     if (updatedProduct.salePrice !== undefined) {
       updatedProduct.salePrice = updatedProduct.salePrice ? Number(updatedProduct.salePrice) : null;

@@ -19,6 +19,77 @@ const MONGODB_URI = process.env.MONGODB_URI || null;
 let dbClient = null;
 let db = null;
 
+let cachedDb = null;
+let cachedClient = null;
+
+async function getDatabase() {
+  if (cachedDb) {
+    return cachedDb;
+  }
+  if (!MONGODB_URI) {
+    return null;
+  }
+  try {
+    console.log('Connecting to cloud MongoDB Atlas (serverless pool)...');
+    cachedClient = new MongoClient(MONGODB_URI);
+    await cachedClient.connect();
+    cachedDb = cachedClient.db('zerocollection');
+    console.log('Connected to cloud MongoDB Atlas successfully!');
+    await seedDatabase(cachedDb);
+    return cachedDb;
+  } catch (err) {
+    console.error('Failed to connect to MongoDB Atlas in serverless pool:', err);
+    return null;
+  }
+}
+
+async function seedDatabase(database) {
+  try {
+    const homepageCol = database.collection('homepage');
+    const homepageCount = await homepageCol.countDocuments();
+    if (homepageCount === 0) {
+      const localHomepage = readJSON(HOMEPAGE_FILE, {
+        announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
+        heroTitle: "NEW SEASON.\nNEW DROPS.",
+        heroSubtitle: "Explore the latest from Zero Collection",
+        showSaleSection: true,
+        saleTitle: "SALE IS LIVE 🖤",
+        saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
+      });
+      delete localHomepage._id;
+      await homepageCol.insertOne(localHomepage);
+      console.log('Seeded default homepage settings into cloud database.');
+    }
+
+    const productsCol = database.collection('products');
+    const productsCount = await productsCol.countDocuments();
+    if (productsCount === 0) {
+      const localProducts = readJSON(PRODUCTS_FILE, []);
+      if (localProducts.length > 0) {
+        const sanitizedProducts = localProducts.map(p => {
+          const clean = { ...p };
+          delete clean._id;
+          return clean;
+        });
+        await productsCol.insertMany(sanitizedProducts);
+        console.log(`Seeded ${localProducts.length} products into cloud database.`);
+      }
+    }
+  } catch (err) {
+    console.error('Error during database seeding:', err);
+  }
+}
+
+async function useDatabase(req, res, next) {
+  try {
+    db = await getDatabase();
+    next();
+  } catch (err) {
+    console.error('Database middleware error:', err);
+    next();
+  }
+}
+
 // Ensure local data directory exists (for offline fallback)
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -27,6 +98,7 @@ if (!fs.existsSync(DATA_DIR)) {
 // Middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(useDatabase);
 
 // Auth helper
 function requireAdmin(req, res, next) {
@@ -105,58 +177,7 @@ function writeJSON(file, data) {
   }
 }
 
-// Cloud MongoDB Connection Manager
-async function initDB() {
-  if (MONGODB_URI) {
-    try {
-      console.log('Connecting to cloud MongoDB Atlas database...');
-      dbClient = new MongoClient(MONGODB_URI);
-      await dbClient.connect();
-      db = dbClient.db('zerocollection');
-      console.log('Connected to cloud MongoDB Atlas successfully!');
-      
-      // Seed default homepage configuration if collection is empty
-      const homepageCol = db.collection('homepage');
-      const homepageCount = await homepageCol.countDocuments();
-      if (homepageCount === 0) {
-        const localHomepage = readJSON(HOMEPAGE_FILE, {
-          announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
-          heroTitle: "NEW SEASON.\nNEW DROPS.",
-          heroSubtitle: "Explore the latest from Zero Collection",
-          showSaleSection: true,
-          saleTitle: "SALE IS LIVE 🖤",
-          saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
-        });
-        // Remove MongoDB _id if present in seed
-        delete localHomepage._id;
-        await homepageCol.insertOne(localHomepage);
-        console.log('Seeded default homepage settings into cloud database.');
-      }
-
-      // Seed products if collection is empty
-      const productsCol = db.collection('products');
-      const productsCount = await productsCol.countDocuments();
-      if (productsCount === 0) {
-        const localProducts = readJSON(PRODUCTS_FILE, []);
-        if (localProducts.length > 0) {
-          const sanitizedProducts = localProducts.map(p => {
-            const clean = { ...p };
-            delete clean._id;
-            return clean;
-          });
-          await productsCol.insertMany(sanitizedProducts);
-          console.log(`Seeded ${localProducts.length} products into cloud database.`);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to connect to MongoDB Atlas:', err);
-      console.log('Falling back to local JSON file storage.');
-      db = null;
-    }
-  } else {
-    console.log('Using local JSON file storage.');
-  }
-}
+// Old initDB helper removed (database connections are now managed dynamically per-request)
 
 /* ==========================================================================
    API ENDPOINTS
@@ -589,8 +610,8 @@ app.use((err, req, res, next) => {
 
 // Start Server
 async function startServer() {
-  await initDB();
   if (!process.env.VERCEL) {
+    await getDatabase();
     app.listen(PORT, () => {
       console.log(`ZERO COLLECTION server running at http://localhost:${PORT}`);
     });

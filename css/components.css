@@ -286,6 +286,18 @@
   gap: 16px;
 }
 
+@media (max-width: 900px) {
+  .search-results-preview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Product Card ── */
 .product-card {
   position: relative;

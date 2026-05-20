@@ -675,6 +675,8 @@ app.put('/api/homepage', requireAdmin, async (req, res) => {
         }
       });
 
+      delete mergedConfig._id; // Prevent Mongo immutable _id field write exception
+
       await db.collection('homepage').updateOne(
         { configId: "main" },
         { $set: mergedConfig },

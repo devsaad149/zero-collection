@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -13,7 +14,12 @@ const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const HOMEPAGE_FILE = path.join(DATA_DIR, 'homepage.json');
 const ADMIN_TOKEN = 'zero-collection-admin-secure-token-2026';
 
-// Ensure data directory exists
+// Cloud Database Configuration
+const MONGODB_URI = process.env.MONGODB_URI || null;
+let dbClient = null;
+let db = null;
+
+// Ensure local data directory exists (for offline fallback)
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -32,32 +38,49 @@ function requireAdmin(req, res, next) {
   }
 }
 
-// Multer Storage Setup for Product Images
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, 'images'));
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique filename: product-id + timestamp + original ext
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'upload-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|webp/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (mimetype && extname) {
-      return cb(null, true);
+// Multer Storage Setup
+let upload;
+if (MONGODB_URI) {
+  // Cloud Mode: Use memory storage to intercept file buffers and convert them to base64
+  upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+      const filetypes = /jpeg|jpg|png|webp/;
+      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = filetypes.test(file.mimetype);
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+      cb(new Error('Only images (JPEG, JPG, PNG, WEBP) are allowed'));
     }
-    cb(new Error('Only images (JPEG, JPG, PNG, WEBP) are allowed'));
-  }
-});
+  });
+} else {
+  // Local Mode: Use disk storage to write files to /images
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, 'images'));
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, 'upload-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+  upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+      const filetypes = /jpeg|jpg|png|webp/;
+      const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = filetypes.test(file.mimetype);
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+      cb(new Error('Only images (JPEG, JPG, PNG, WEBP) are allowed'));
+    }
+  });
+}
 
-// Helper functions to read/write JSON files safely
+// Helper functions to read/write JSON files safely (Local Mode Fallback)
 function readJSON(file, defaultVal = []) {
   try {
     if (!fs.existsSync(file)) {
@@ -82,6 +105,59 @@ function writeJSON(file, data) {
   }
 }
 
+// Cloud MongoDB Connection Manager
+async function initDB() {
+  if (MONGODB_URI) {
+    try {
+      console.log('Connecting to cloud MongoDB Atlas database...');
+      dbClient = new MongoClient(MONGODB_URI);
+      await dbClient.connect();
+      db = dbClient.db('zerocollection');
+      console.log('Connected to cloud MongoDB Atlas successfully!');
+      
+      // Seed default homepage configuration if collection is empty
+      const homepageCol = db.collection('homepage');
+      const homepageCount = await homepageCol.countDocuments();
+      if (homepageCount === 0) {
+        const localHomepage = readJSON(HOMEPAGE_FILE, {
+          announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
+          heroTitle: "NEW SEASON.\nNEW DROPS.",
+          heroSubtitle: "Explore the latest from Zero Collection",
+          showSaleSection: true,
+          saleTitle: "SALE IS LIVE 🖤",
+          saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
+        });
+        // Remove MongoDB _id if present in seed
+        delete localHomepage._id;
+        await homepageCol.insertOne(localHomepage);
+        console.log('Seeded default homepage settings into cloud database.');
+      }
+
+      // Seed products if collection is empty
+      const productsCol = db.collection('products');
+      const productsCount = await productsCol.countDocuments();
+      if (productsCount === 0) {
+        const localProducts = readJSON(PRODUCTS_FILE, []);
+        if (localProducts.length > 0) {
+          const sanitizedProducts = localProducts.map(p => {
+            const clean = { ...p };
+            delete clean._id;
+            return clean;
+          });
+          await productsCol.insertMany(sanitizedProducts);
+          console.log(`Seeded ${localProducts.length} products into cloud database.`);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to connect to MongoDB Atlas:', err);
+      console.log('Falling back to local JSON file storage.');
+      db = null;
+    }
+  } else {
+    console.log('Using local JSON file storage.');
+  }
+}
+
 /* ==========================================================================
    API ENDPOINTS
    ========================================================================== */
@@ -99,220 +175,361 @@ app.post('/api/auth/login', (req, res) => {
 // ── PRODUCTS API ──
 
 // Get all products
-app.get('/api/products', (req, res) => {
-  const products = readJSON(PRODUCTS_FILE, []);
-  res.json(products);
+app.get('/api/products', async (req, res) => {
+  try {
+    if (db) {
+      const products = await db.collection('products').find({}).toArray();
+      res.json(products);
+    } else {
+      res.json(readJSON(PRODUCTS_FILE, []));
+    }
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ error: 'Failed to retrieve products' });
+  }
 });
 
 // Add a product (Admin)
-app.post('/api/products', requireAdmin, (req, res) => {
-  const products = readJSON(PRODUCTS_FILE, []);
-  const newProduct = req.body;
+app.post('/api/products', requireAdmin, async (req, res) => {
+  try {
+    let products = [];
+    if (db) {
+      products = await db.collection('products').find({}).toArray();
+    } else {
+      products = readJSON(PRODUCTS_FILE, []);
+    }
+    const newProduct = req.body;
 
-  // Simple validation
-  if (!newProduct.name || !newProduct.category || !newProduct.price) {
-    return res.status(400).json({ error: 'Product name, category, and price are required' });
+    // Simple validation
+    if (!newProduct.name || !newProduct.category || !newProduct.price) {
+      return res.status(400).json({ error: 'Product name, category, and price are required' });
+    }
+
+    // Generate unique product ID based on category and current products
+    if (!newProduct.id) {
+      const categoryPrefix = newProduct.category.toLowerCase().replace(/[^a-z]/g, '') || 'product';
+      const count = products.filter(p => p.category === newProduct.category).length;
+      newProduct.id = `${categoryPrefix}-${String(count + 1).padStart(3, '0')}`;
+    }
+
+    // Ensure ID is unique
+    if (products.some(p => p.id === newProduct.id)) {
+      newProduct.id = newProduct.id + '-' + Math.floor(Math.random() * 1000);
+    }
+
+    newProduct.price = Number(newProduct.price);
+    if (newProduct.salePrice) {
+      newProduct.salePrice = Number(newProduct.salePrice);
+    }
+    newProduct.onSale = !!newProduct.onSale;
+    newProduct.featured = !!newProduct.featured;
+    newProduct.dateAdded = newProduct.dateAdded || new Date().toISOString().split('T')[0];
+    newProduct.images = newProduct.images || [];
+    newProduct.sizes = newProduct.sizes || ['S', 'M', 'L', 'XL', 'XXL'];
+    newProduct.features = newProduct.features || [];
+
+    if (db) {
+      await db.collection('products').insertOne(newProduct);
+    } else {
+      products.push(newProduct);
+      writeJSON(PRODUCTS_FILE, products);
+    }
+    res.status(201).json(newProduct);
+  } catch (err) {
+    console.error('Error adding product:', err);
+    res.status(500).json({ error: 'Failed to add product' });
   }
-
-  // Generate unique product ID based on category and current products
-  if (!newProduct.id) {
-    const categoryPrefix = newProduct.category.toLowerCase().replace(/[^a-z]/g, '') || 'product';
-    const count = products.filter(p => p.category === newProduct.category).length;
-    newProduct.id = `${categoryPrefix}-${String(count + 1).padStart(3, '0')}`;
-  }
-
-  // Ensure ID is unique
-  if (products.some(p => p.id === newProduct.id)) {
-    newProduct.id = newProduct.id + '-' + Math.floor(Math.random() * 1000);
-  }
-
-  newProduct.price = Number(newProduct.price);
-  if (newProduct.salePrice) {
-    newProduct.salePrice = Number(newProduct.salePrice);
-  }
-  newProduct.onSale = !!newProduct.onSale;
-  newProduct.featured = !!newProduct.featured;
-  newProduct.dateAdded = newProduct.dateAdded || new Date().toISOString().split('T')[0];
-  newProduct.images = newProduct.images || [];
-  newProduct.sizes = newProduct.sizes || ['S', 'M', 'L', 'XL', 'XXL'];
-  newProduct.features = newProduct.features || [];
-
-  products.push(newProduct);
-  writeJSON(PRODUCTS_FILE, products);
-  res.status(201).json(newProduct);
 });
 
 // Edit a product (Admin)
-app.put('/api/products/:id', requireAdmin, (req, res) => {
-  const products = readJSON(PRODUCTS_FILE, []);
-  const productId = req.params.id;
-  const index = products.findIndex(p => p.id === productId);
+app.put('/api/products/:id', requireAdmin, async (req, res) => {
+  try {
+    const productId = req.params.id;
+    let products = [];
+    let existingProduct = null;
 
-  if (index === -1) {
-    return res.status(404).json({ error: 'Product not found' });
+    if (db) {
+      existingProduct = await db.collection('products').findOne({ id: productId });
+    } else {
+      products = readJSON(PRODUCTS_FILE, []);
+      existingProduct = products.find(p => p.id === productId);
+    }
+
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const updateData = { ...req.body };
+    delete updateData._id; // Ensure internal Mongo DB ID is not overwritten
+
+    const updatedProduct = { ...existingProduct, ...updateData };
+    updatedProduct.price = Number(updatedProduct.price);
+    if (updatedProduct.salePrice !== undefined) {
+      updatedProduct.salePrice = updatedProduct.salePrice ? Number(updatedProduct.salePrice) : null;
+    }
+    updatedProduct.onSale = !!updatedProduct.onSale;
+    updatedProduct.featured = !!updatedProduct.featured;
+    updatedProduct.images = updatedProduct.images || [];
+    updatedProduct.sizes = updatedProduct.sizes || [];
+    updatedProduct.features = updatedProduct.features || [];
+
+    if (db) {
+      await db.collection('products').updateOne({ id: productId }, { $set: updatedProduct });
+    } else {
+      const index = products.findIndex(p => p.id === productId);
+      products[index] = updatedProduct;
+      writeJSON(PRODUCTS_FILE, products);
+    }
+    res.json(updatedProduct);
+  } catch (err) {
+    console.error('Error updating product:', err);
+    res.status(500).json({ error: 'Failed to update product' });
   }
-
-  const updatedProduct = { ...products[index], ...req.body };
-  updatedProduct.price = Number(updatedProduct.price);
-  if (updatedProduct.salePrice !== undefined) {
-    updatedProduct.salePrice = updatedProduct.salePrice ? Number(updatedProduct.salePrice) : null;
-  }
-  updatedProduct.onSale = !!updatedProduct.onSale;
-  updatedProduct.featured = !!updatedProduct.featured;
-  updatedProduct.images = updatedProduct.images || [];
-  updatedProduct.sizes = updatedProduct.sizes || [];
-  updatedProduct.features = updatedProduct.features || [];
-
-  products[index] = updatedProduct;
-  writeJSON(PRODUCTS_FILE, products);
-  res.json(updatedProduct);
 });
 
 // Delete a product (Admin)
-app.delete('/api/products/:id', requireAdmin, (req, res) => {
-  const products = readJSON(PRODUCTS_FILE, []);
-  const productId = req.params.id;
-  const filteredProducts = products.filter(p => p.id !== productId);
+app.delete('/api/products/:id', requireAdmin, async (req, res) => {
+  try {
+    const productId = req.params.id;
+    let products = [];
+    let productToDelete = null;
 
-  if (products.length === filteredProducts.length) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
+    if (db) {
+      productToDelete = await db.collection('products').findOne({ id: productId });
+    } else {
+      products = readJSON(PRODUCTS_FILE, []);
+      productToDelete = products.find(p => p.id === productId);
+    }
 
-  // Optional: delete associated uploaded images from disk if desired
-  const productToDelete = products.find(p => p.id === productId);
-  if (productToDelete && productToDelete.images) {
-    productToDelete.images.forEach(imgUrl => {
-      if (imgUrl.startsWith('images/upload-')) {
-        const filePath = path.join(__dirname, imgUrl);
-        if (fs.existsSync(filePath)) {
-          try {
-            fs.unlinkSync(filePath);
-          } catch (e) {
-            console.error('Failed to delete image file:', filePath, e);
+    if (!productToDelete) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Local only: delete associated uploaded images from disk
+    if (!db && productToDelete.images) {
+      productToDelete.images.forEach(imgUrl => {
+        if (imgUrl.startsWith('images/upload-')) {
+          const filePath = path.join(__dirname, imgUrl);
+          if (fs.existsSync(filePath)) {
+            try {
+              fs.unlinkSync(filePath);
+            } catch (e) {
+              console.error('Failed to delete image file:', filePath, e);
+            }
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  writeJSON(PRODUCTS_FILE, filteredProducts);
-  res.json({ success: true, message: 'Product deleted successfully' });
+    if (db) {
+      await db.collection('products').deleteOne({ id: productId });
+    } else {
+      const filteredProducts = products.filter(p => p.id !== productId);
+      writeJSON(PRODUCTS_FILE, filteredProducts);
+    }
+    res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    res.status(500).json({ error: 'Failed to delete product' });
+  }
 });
 
 // ── ORDERS API ──
 
 // Submit a new order (Public checkout)
-app.post('/api/orders', (req, res) => {
-  const orders = readJSON(ORDERS_FILE, []);
-  const orderData = req.body;
+app.post('/api/orders', async (req, res) => {
+  try {
+    const orderData = req.body;
 
-  if (!orderData.shippingInfo || !orderData.items || orderData.items.length === 0) {
-    return res.status(400).json({ error: 'Invalid order structure or empty cart' });
+    if (!orderData.shippingInfo || !orderData.items || orderData.items.length === 0) {
+      return res.status(400).json({ error: 'Invalid order structure or empty cart' });
+    }
+
+    // Set order defaults
+    orderData.orderId = orderData.orderId || '#ZC-' + Math.floor(100000 + Math.random() * 900000);
+    orderData.status = 'Pending'; // Pending, Shipped, Delivered, Cancelled
+    orderData.date = new Date().toLocaleString();
+    orderData.tracking = {
+      courier: '',
+      trackingNumber: '',
+      statusUpdates: [
+        { status: 'Pending', details: 'Order received and is pending confirmation.', time: new Date().toLocaleString() }
+      ]
+    };
+
+    if (db) {
+      await db.collection('orders').insertOne(orderData);
+    } else {
+      const orders = readJSON(ORDERS_FILE, []);
+      orders.push(orderData);
+      writeJSON(ORDERS_FILE, orders);
+    }
+    res.status(201).json(orderData);
+  } catch (err) {
+    console.error('Error submitting order:', err);
+    res.status(500).json({ error: 'Failed to place order' });
   }
-
-  // Set order defaults
-  orderData.orderId = orderData.orderId || '#ZC-' + Math.floor(100000 + Math.random() * 900000);
-  orderData.status = 'Pending'; // Pending, Shipped, Delivered, Cancelled
-  orderData.date = new Date().toLocaleString();
-  orderData.tracking = {
-    courier: '',
-    trackingNumber: '',
-    statusUpdates: [
-      { status: 'Pending', details: 'Order received and is pending confirmation.', time: new Date().toLocaleString() }
-    ]
-  };
-
-  orders.push(orderData);
-  writeJSON(ORDERS_FILE, orders);
-  res.status(201).json(orderData);
 });
 
 // Get all orders (Admin only)
-app.get('/api/orders', requireAdmin, (req, res) => {
-  const orders = readJSON(ORDERS_FILE, []);
-  // Return orders sorted by date (newest first)
-  res.json(orders.reverse());
+app.get('/api/orders', requireAdmin, async (req, res) => {
+  try {
+    if (db) {
+      const orders = await db.collection('orders').find({}).toArray();
+      res.json(orders.reverse());
+    } else {
+      const orders = readJSON(ORDERS_FILE, []);
+      res.json(orders.reverse());
+    }
+  } catch (err) {
+    console.error('Error loading orders:', err);
+    res.status(500).json({ error: 'Failed to load orders' });
+  }
 });
 
 // Update order status/tracking (Admin only)
-app.put('/api/orders/:id', requireAdmin, (req, res) => {
-  const orders = readJSON(ORDERS_FILE, []);
-  const orderId = req.params.id; // Can be internal ID or generated orderId e.g. #ZC-123456
-  const index = orders.findIndex(o => o.orderId === orderId);
+app.put('/api/orders/:id', requireAdmin, async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    let orders = [];
+    let order = null;
 
-  if (index === -1) {
-    return res.status(404).json({ error: 'Order not found' });
+    if (db) {
+      order = await db.collection('orders').findOne({ orderId: orderId });
+    } else {
+      orders = readJSON(ORDERS_FILE, []);
+      order = orders.find(o => o.orderId === orderId);
+    }
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const { status, courier, trackingNumber, statusDetails } = req.body;
+
+    if (status && status !== order.status) {
+      order.status = status;
+      order.tracking.statusUpdates.push({
+        status: status,
+        details: statusDetails || `Order status updated to: ${status}`,
+        time: new Date().toLocaleString()
+      });
+    }
+
+    if (courier !== undefined) order.tracking.courier = courier;
+    if (trackingNumber !== undefined) order.tracking.trackingNumber = trackingNumber;
+
+    if (db) {
+      delete order._id;
+      await db.collection('orders').updateOne({ orderId: orderId }, { $set: order });
+    } else {
+      const index = orders.findIndex(o => o.orderId === orderId);
+      orders[index] = order;
+      writeJSON(ORDERS_FILE, orders);
+    }
+    res.json(order);
+  } catch (err) {
+    console.error('Error updating order status:', err);
+    res.status(500).json({ error: 'Failed to update order status' });
   }
-
-  const { status, courier, trackingNumber, statusDetails } = req.body;
-  const order = orders[index];
-
-  if (status && status !== order.status) {
-    order.status = status;
-    order.tracking.statusUpdates.push({
-      status: status,
-      details: statusDetails || `Order status updated to: ${status}`,
-      time: new Date().toLocaleString()
-    });
-  }
-
-  if (courier !== undefined) order.tracking.courier = courier;
-  if (trackingNumber !== undefined) order.tracking.trackingNumber = trackingNumber;
-
-  orders[index] = order;
-  writeJSON(ORDERS_FILE, orders);
-  res.json(order);
 });
 
 // Public order tracking
-app.get('/api/orders/track/:query', (req, res) => {
-  const orders = readJSON(ORDERS_FILE, []);
-  const query = req.params.query.trim().toLowerCase();
+app.get('/api/orders/track/:query', async (req, res) => {
+  try {
+    const query = req.params.query.trim().toLowerCase();
+    let matchingOrder = null;
 
-  // Search by exact orderId or phone number
-  const matchingOrder = orders.find(o => 
-    o.orderId.toLowerCase() === query || 
-    o.orderId.toLowerCase() === '#' + query || 
-    o.shippingInfo.phone.replace(/[\s-]/g, '') === query.replace(/[\s-]/g, '')
-  );
+    if (db) {
+      const cleanPhone = query.replace(/[\s-]/g, '');
+      const searchOptions = [
+        { orderId: { $regex: new RegExp('^' + query.replace('#', '') + '$', 'i') } }
+      ];
+      if (cleanPhone.length > 5) {
+        searchOptions.push({ 'shippingInfo.phone': { $regex: new RegExp(cleanPhone, 'i') } });
+      }
+      matchingOrder = await db.collection('orders').findOne({ $or: searchOptions });
+    } else {
+      const orders = readJSON(ORDERS_FILE, []);
+      matchingOrder = orders.find(o => 
+        o.orderId.toLowerCase() === query || 
+        o.orderId.toLowerCase() === '#' + query || 
+        o.shippingInfo.phone.replace(/[\s-]/g, '') === query.replace(/[\s-]/g, '')
+      );
+    }
 
-  if (!matchingOrder) {
-    return res.status(404).json({ error: 'No matching order found.' });
+    if (!matchingOrder) {
+      return res.status(404).json({ error: 'No matching order found.' });
+    }
+
+    // Return public subset of order details for security/privacy
+    res.json({
+      orderId: matchingOrder.orderId,
+      status: matchingOrder.status,
+      date: matchingOrder.date,
+      items: matchingOrder.items.map(i => ({ name: i.name, size: i.size, qty: i.qty })),
+      financials: {
+        total: matchingOrder.financials.total
+      },
+      tracking: matchingOrder.tracking
+    });
+  } catch (err) {
+    console.error('Error tracking order:', err);
+    res.status(500).json({ error: 'Failed to track order' });
   }
-
-  // Return public subset of order details for privacy
-  res.json({
-    orderId: matchingOrder.orderId,
-    status: matchingOrder.status,
-    date: matchingOrder.date,
-    items: matchingOrder.items.map(i => ({ name: i.name, size: i.size, qty: i.qty })),
-    financials: {
-      total: matchingOrder.financials.total
-    },
-    tracking: matchingOrder.tracking
-  });
 });
 
 // ── HOMEPAGE CONFIG API ──
 
 // Get homepage settings
-app.get('/api/homepage', (req, res) => {
-  const config = readJSON(HOMEPAGE_FILE, {
-    announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
-    heroTitle: "NEW SEASON.\nNEW DROPS.",
-    heroSubtitle: "Explore the latest from Zero Collection",
-    showSaleSection: true,
-    saleTitle: "SALE IS LIVE 🖤",
-    saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
-  });
-  res.json(config);
+app.get('/api/homepage', async (req, res) => {
+  try {
+    if (db) {
+      const config = await db.collection('homepage').findOne({});
+      if (config) {
+        res.json(config);
+      } else {
+        res.json({
+          announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
+          heroTitle: "NEW SEASON.\nNEW DROPS.",
+          heroSubtitle: "Explore the latest from Zero Collection",
+          showSaleSection: true,
+          saleTitle: "SALE IS LIVE 🖤",
+          saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
+        });
+      }
+    } else {
+      const config = readJSON(HOMEPAGE_FILE, {
+        announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
+        heroTitle: "NEW SEASON.\nNEW DROPS.",
+        heroSubtitle: "Explore the latest from Zero Collection",
+        showSaleSection: true,
+        saleTitle: "SALE IS LIVE 🖤",
+        saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
+      });
+      res.json(config);
+    }
+  } catch (err) {
+    console.error('Error loading homepage config:', err);
+    res.status(500).json({ error: 'Failed to load settings' });
+  }
 });
 
 // Update homepage settings (Admin)
-app.put('/api/homepage', requireAdmin, (req, res) => {
-  const config = req.body;
-  writeJSON(HOMEPAGE_FILE, config);
-  res.json(config);
+app.put('/api/homepage', requireAdmin, async (req, res) => {
+  try {
+    const config = req.body;
+    if (db) {
+      delete config._id;
+      await db.collection('homepage').updateOne({}, { $set: config }, { upsert: true });
+    } else {
+      writeJSON(HOMEPAGE_FILE, config);
+    }
+    res.json(config);
+  } catch (err) {
+    console.error('Error saving homepage config:', err);
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
 });
 
 // ── IMAGE UPLOAD (Admin) ──
@@ -324,8 +541,17 @@ app.post('/api/upload', requireAdmin, (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Please select an image file to upload' });
     }
-    // Return the relative URL path of the uploaded image
-    res.json({ imageUrl: 'images/' + req.file.filename });
+
+    if (MONGODB_URI) {
+      // Memory Upload (Cloud DB): Convert file buffer to base64 Data URL
+      const b64 = req.file.buffer.toString('base64');
+      const mime = req.file.mimetype;
+      const dataUrl = `data:${mime};base64,${b64}`;
+      res.json({ imageUrl: dataUrl });
+    } else {
+      // Local Disk Upload: Return relative path url
+      res.json({ imageUrl: 'images/' + req.file.filename });
+    }
   });
 });
 
@@ -333,7 +559,7 @@ app.post('/api/upload', requireAdmin, (req, res) => {
    STATIC FILE SERVING
    ========================================================================== */
 
-// Serve static assets (images, CSS, JS)
+// Serve static assets
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
@@ -352,7 +578,7 @@ app.get('/order-confirm.html', (req, res) => res.sendFile(path.join(__dirname, '
 app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/track.html', (req, res) => res.sendFile(path.join(__dirname, 'track.html')));
 
-// Catch-all fall back to index
+// Catch-all fallback to index
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // Error handling middleware
@@ -362,6 +588,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`ZERO COLLECTION server running at http://localhost:${PORT}`);
-});
+async function startServer() {
+  await initDB();
+  app.listen(PORT, () => {
+    console.log(`ZERO COLLECTION server running at http://localhost:${PORT}`);
+  });
+}
+startServer();

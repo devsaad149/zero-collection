@@ -590,8 +590,12 @@ app.use((err, req, res, next) => {
 // Start Server
 async function startServer() {
   await initDB();
-  app.listen(PORT, () => {
-    console.log(`ZERO COLLECTION server running at http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`ZERO COLLECTION server running at http://localhost:${PORT}`);
+    });
+  }
 }
 startServer();
+
+module.exports = app;

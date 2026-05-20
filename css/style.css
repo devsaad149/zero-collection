@@ -301,6 +301,23 @@ p {
   background-color: var(--color-black);
 }
 
+/* ── Layout Grids ── */
+.category-grid, .trust-grid, .instagram-grid {
+  display: grid;
+}
+.category-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.trust-grid {
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.instagram-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .product-grid {
@@ -351,6 +368,18 @@ p {
 @media (min-width: 769px) {
   .mobile-only {
     display: none !important;
+  }
+  
+  .category-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .trust-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .instagram-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
   }
 }
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 80" width="250" height="80">
+  <!-- Left large "0" -->
+  <text x="10" y="65" font-family="'Times New Roman', Times, serif" font-size="75" font-weight="bold" fill="#000000">0</text>
+  
+  <!-- Vertical divider -->
+  <line x1="75" y1="20" x2="75" y2="65" stroke="#cccccc" stroke-width="1" />
+  
+  <!-- Top text: ZERO -->
+  <text x="95" y="42" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="22" font-weight="normal" letter-spacing="6" fill="#000000">ZERO</text>
+  
+  <!-- Horizontal divider -->
+  <line x1="95" y1="52" x2="230" y2="52" stroke="#cccccc" stroke-width="1" />
+  
+  <!-- Bottom text: COLLECTION (made slightly darker, readable) -->
+  <text x="95" y="66" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="10" font-weight="normal" letter-spacing="4.5" fill="#555555">COLLECTION</text>
+</svg>

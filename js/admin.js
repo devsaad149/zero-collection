@@ -14,6 +14,51 @@ let homepageConfig = {};
 let currentEditingProductId = null;
 let currentUploadedImages = [];
 
+// ── CLIENT-SIDE IMAGE COMPRESSION ──
+function compressImage(file, maxDimension = 1200, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith('image/')) {
+      return resolve(file);
+    }
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+}
+
 function initAdminDashboard() {
   const loginSection = document.getElementById('loginSection');
   const dashboardSection = document.getElementById('dashboardSection');
@@ -349,35 +394,45 @@ function handleProductImageUpload(e) {
   if (!file) return;
 
   const errorEl = document.getElementById('productFormError');
-  if (errorEl) errorEl.style.display = 'none';
+  if (errorEl) {
+    errorEl.textContent = "Compressing and uploading image...";
+    errorEl.style.color = "var(--color-black)";
+    errorEl.style.display = 'block';
+  }
 
-  const formData = new FormData();
-  formData.append('image', file);
+  compressImage(file, 1200, 0.75)
+    .then(compressedBlob => {
+      const formData = new FormData();
+      const originalName = file.name.substring(0, file.name.lastIndexOf('.')) || 'upload';
+      formData.append('image', compressedBlob, `${originalName}.jpg`);
 
-  fetch('/api/upload', {
-    method: 'POST',
-    headers: {
-      'x-admin-token': adminToken
-    },
-    body: formData
-  })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => { throw new Error(err.error || 'Failed to upload image') });
-    }
-    return res.json();
-  })
-  .then(data => {
-    currentUploadedImages.push(data.imageUrl);
-    renderImagePreviews();
-  })
-  .catch(err => {
-    console.error("Upload error:", err);
-    if (errorEl) {
-      errorEl.textContent = err.message;
-      errorEl.style.display = 'block';
-    }
-  });
+      return fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-admin-token': adminToken
+        },
+        body: formData
+      });
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => { throw new Error(err.error || 'Failed to upload image') });
+      }
+      return res.json();
+    })
+    .then(data => {
+      currentUploadedImages.push(data.imageUrl);
+      renderImagePreviews();
+      if (errorEl) errorEl.style.display = 'none';
+    })
+    .catch(err => {
+      console.error("Upload error:", err);
+      if (errorEl) {
+        errorEl.textContent = err.message;
+        errorEl.style.color = "#D32F2F";
+        errorEl.style.display = 'block';
+      }
+    });
 }
 
 function removeImageAtIndex(idx) {
@@ -764,31 +819,50 @@ window.handleHomepageImageUpload = function(e, key) {
   const file = e.target.files[0];
   if (!file) return;
 
-  const formData = new FormData();
-  formData.append('image', file);
+  const saveMsg = document.getElementById('homepageSaveMsg');
+  if (saveMsg) {
+    saveMsg.textContent = "Compressing and uploading image...";
+    saveMsg.style.color = "var(--color-black)";
+    saveMsg.style.display = 'block';
+  }
 
-  fetch('/api/upload', {
-    method: 'POST',
-    headers: {
-      'x-admin-token': adminToken
-    },
-    body: formData
-  })
-  .then(res => {
-    if (!res.ok) {
-      return res.json().then(err => { throw new Error(err.error || 'Upload failed') });
-    }
-    return res.json();
-  })
-  .then(data => {
-    const input = document.getElementById(`${key}Url`);
-    if (input) {
-      input.value = data.imageUrl;
-    }
-  })
-  .catch(err => {
-    alert('Failed to upload homepage image: ' + err.message);
-  });
+  compressImage(file, 1200, 0.75)
+    .then(compressedBlob => {
+      const formData = new FormData();
+      const originalName = file.name.substring(0, file.name.lastIndexOf('.')) || 'upload';
+      formData.append('image', compressedBlob, `${originalName}.jpg`);
+
+      return fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-admin-token': adminToken
+        },
+        body: formData
+      });
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(err => { throw new Error(err.error || 'Upload failed') });
+      }
+      return res.json();
+    })
+    .then(data => {
+      const input = document.getElementById(`${key}Url`);
+      if (input) {
+        input.value = data.imageUrl;
+      }
+      if (saveMsg) {
+        saveMsg.textContent = "Image uploaded successfully. Remember to click 'Save Settings' at the bottom of the page to apply!";
+        saveMsg.style.color = "green";
+        setTimeout(() => {
+          saveMsg.style.display = 'none';
+        }, 8000);
+      }
+    })
+    .catch(err => {
+      alert('Failed to upload homepage image: ' + err.message);
+      if (saveMsg) saveMsg.style.display = 'none';
+    });
 };
 
 // Explicitly expose functions to the global window object to support dynamic inline HTML event handlers

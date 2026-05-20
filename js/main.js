@@ -254,7 +254,7 @@ function setActiveNavLink() {
 
 // ── Load Dynamic Homepage Config ──
 function loadHomepageConfig() {
-  fetch('/api/homepage')
+  fetch('/api/homepage?t=' + Date.now())
     .then(res => res.json())
     .then(config => {
       // 1. Update Announcement Bar (on all pages)

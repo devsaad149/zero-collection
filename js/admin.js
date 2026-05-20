@@ -209,7 +209,7 @@ function fetchOrders() {
 }
 
 function fetchHomepage() {
-  fetch('/api/homepage')
+  fetch('/api/homepage?t=' + Date.now())
     .then(res => res.json())
     .then(data => {
       homepageConfig = data;
@@ -804,6 +804,7 @@ function saveHomepageConfig() {
   })
   .then(data => {
     homepageConfig = data;
+    populateHomepageForm();
     const msg = document.getElementById('homepageSaveMsg');
     msg.textContent = 'Homepage settings updated successfully';
     msg.style.display = 'block';

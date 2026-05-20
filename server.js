@@ -57,6 +57,7 @@ async function seedDatabase(database) {
         saleSubtitle: "UP TO 40% OFF ON SELECTED ITEMS"
       });
       delete localHomepage._id;
+      localHomepage.configId = "main";
       await homepageCol.insertOne(localHomepage);
       console.log('Seeded default homepage settings into cloud database.');
     }
@@ -99,6 +100,14 @@ if (!fs.existsSync(DATA_DIR)) {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(useDatabase);
+
+// API Cache-Control Middleware to prevent browser and CDN caching
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
 
 // Auth helper
 function requireAdmin(req, res, next) {
@@ -604,11 +613,19 @@ app.get('/api/orders/track/:query', async (req, res) => {
 app.get('/api/homepage', async (req, res) => {
   try {
     if (db) {
-      const config = await db.collection('homepage').findOne({});
+      let config = await db.collection('homepage').findOne({ configId: "main" });
+      if (!config) {
+        config = await db.collection('homepage').findOne({});
+        if (config && !config.configId) {
+          await db.collection('homepage').updateOne({ _id: config._id }, { $set: { configId: "main" } });
+          config.configId = "main";
+        }
+      }
       if (config) {
         res.json(config);
       } else {
         res.json({
+          configId: "main",
           announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
           heroTitle: "NEW SEASON.\nNEW DROPS.",
           heroSubtitle: "Explore the latest from Zero Collection",
@@ -619,6 +636,7 @@ app.get('/api/homepage', async (req, res) => {
       }
     } else {
       const config = readJSON(HOMEPAGE_FILE, {
+        configId: "main",
         announcementBar: "FREE DELIVERY ON ORDERS PKR 2,999 OR ABOVE · Orders are delivered within 4–5 business days · NEW DROP IS NOW LIVE 🖤 · SHOP NOW",
         heroTitle: "NEW SEASON.\nNEW DROPS.",
         heroSubtitle: "Explore the latest from Zero Collection",
@@ -637,14 +655,45 @@ app.get('/api/homepage', async (req, res) => {
 // Update homepage settings (Admin)
 app.put('/api/homepage', requireAdmin, async (req, res) => {
   try {
-    const config = req.body;
+    const incomingConfig = req.body;
+    delete incomingConfig._id;
+
+    const imageFields = ['heroImg', 'saleImg', 'shirtsImg', 'hoodiesImg', 'jacketsImg', 'tshirtsImg'];
+
     if (db) {
-      delete config._id;
-      await db.collection('homepage').updateOne({}, { $set: config }, { upsert: true });
+      let existingConfig = await db.collection('homepage').findOne({ configId: "main" });
+      if (!existingConfig) {
+        existingConfig = await db.collection('homepage').findOne({});
+      }
+
+      const mergedConfig = { ...existingConfig, ...incomingConfig, configId: "main" };
+
+      // Preserve existing images if the incoming ones are empty
+      imageFields.forEach(field => {
+        if (!incomingConfig[field] && existingConfig && existingConfig[field]) {
+          mergedConfig[field] = existingConfig[field];
+        }
+      });
+
+      await db.collection('homepage').updateOne(
+        { configId: "main" },
+        { $set: mergedConfig },
+        { upsert: true }
+      );
+      res.json(mergedConfig);
     } else {
-      writeJSON(HOMEPAGE_FILE, config);
+      const existingConfig = readJSON(HOMEPAGE_FILE, {});
+      const mergedConfig = { ...existingConfig, ...incomingConfig, configId: "main" };
+
+      imageFields.forEach(field => {
+        if (!incomingConfig[field] && existingConfig[field]) {
+          mergedConfig[field] = existingConfig[field];
+        }
+      });
+
+      writeJSON(HOMEPAGE_FILE, mergedConfig);
+      res.json(mergedConfig);
     }
-    res.json(config);
   } catch (err) {
     console.error('Error saving homepage config:', err);
     res.status(500).json({ error: 'Failed to save settings' });

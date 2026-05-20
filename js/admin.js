@@ -790,3 +790,14 @@ window.handleHomepageImageUpload = function(e, key) {
     alert('Failed to upload homepage image: ' + err.message);
   });
 };
+
+// Explicitly expose functions to the global window object to support dynamic inline HTML event handlers
+window.openProductEditForm = openProductEditForm;
+window.deleteProduct = deleteProduct;
+window.closeProductForm = closeProductForm;
+window.addManualImageUrl = addManualImageUrl;
+window.removeImageAtIndex = removeImageAtIndex;
+window.viewOrderDetails = viewOrderDetails;
+window.closeOrderDetail = closeOrderDetail;
+window.handleProductImageUpload = handleProductImageUpload;
+

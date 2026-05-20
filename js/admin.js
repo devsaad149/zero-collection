@@ -708,7 +708,7 @@ function updateOrderStatus(orderId) {
   const trackingNumber = document.getElementById('oTrackingNumber').value.trim();
   const statusDetails = document.getElementById('oStatusDetails').value.trim();
 
-  fetch(`/api/orders/${orderId}`, {
+  fetch(`/api/orders/${encodeURIComponent(orderId)}`, {
     method: 'PUT',
     headers: getAdminHeaders(),
     body: JSON.stringify({ status, courier, trackingNumber, statusDetails })

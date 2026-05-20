@@ -267,12 +267,25 @@ function processCheckoutOrder(cartItems) {
     date: new Date().toLocaleString()
   };
 
-  // Simulate server call
-  setTimeout(() => {
-    // Save to lastOrder
-    localStorage.setItem('lastOrder', JSON.stringify(orderData));
+  // Post order to Express backend API
+  fetch('/api/orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(orderData)
+  })
+  .then(res => {
+    if (!res.ok) {
+      throw new Error('Failed to submit order to server');
+    }
+    return res.json();
+  })
+  .then(savedOrder => {
+    // Save to lastOrder (retrieved from backend with tracking details initialized)
+    localStorage.setItem('lastOrder', JSON.stringify(savedOrder));
 
-    // Clear cart in localStorage and in global variables
+    // Clear cart in localStorage
     localStorage.removeItem('zero_collection_cart');
     
     // Dispatch cart updated event
@@ -280,7 +293,15 @@ function processCheckoutOrder(cartItems) {
 
     // Redirect to Order Confirm page
     window.location.href = 'order-confirm.html';
-  }, 1200);
+  })
+  .catch(err => {
+    console.warn("Express server offline, falling back to local simulation:", err);
+    // Offline / demo fallback
+    localStorage.setItem('lastOrder', JSON.stringify(orderData));
+    localStorage.removeItem('zero_collection_cart');
+    document.dispatchEvent(new CustomEvent('cartUpdated'));
+    window.location.href = 'order-confirm.html';
+  });
 }
 
 // Display Input Error states

@@ -12,6 +12,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
 const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 const HOMEPAGE_FILE = path.join(DATA_DIR, 'homepage.json');
+const CREDENTIALS_FILE = path.join(DATA_DIR, 'admin_credentials.json');
 const ADMIN_TOKEN = 'zero-collection-admin-secure-token-2026';
 
 // Cloud Database Configuration
@@ -289,13 +290,58 @@ app.get('/api/test-db', async (req, res) => {
   res.json(report);
 });
 
-// ── AUTHENTICATION ──
-app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'admin' && password === 'admin123') {
-    res.json({ success: true, token: ADMIN_TOKEN });
+// Admin Credentials Helpers
+async function getAdminCredentials() {
+  if (db) {
+    const creds = await db.collection('settings').findOne({ configId: "admin_credentials" });
+    if (creds) return creds;
+    return { username: 'admin', password: 'admin123' };
   } else {
-    res.status(400).json({ error: 'Invalid username or password' });
+    return readJSON(CREDENTIALS_FILE, { username: 'admin', password: 'admin123' });
+  }
+}
+
+async function setAdminCredentials(username, password) {
+  if (db) {
+    await db.collection('settings').updateOne(
+      { configId: "admin_credentials" },
+      { $set: { username, password } },
+      { upsert: true }
+    );
+  } else {
+    writeJSON(CREDENTIALS_FILE, { username, password });
+  }
+}
+
+// ── AUTHENTICATION ──
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const creds = await getAdminCredentials();
+    if (username === creds.username && password === creds.password) {
+      res.json({ success: true, token: ADMIN_TOKEN });
+    } else {
+      res.status(400).json({ error: 'Invalid username or password' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/auth/password', requireAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const creds = await getAdminCredentials();
+    if (currentPassword !== creds.password) {
+      return res.status(400).json({ error: 'Incorrect current password' });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+    await setAdminCredentials(creds.username, newPassword);
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

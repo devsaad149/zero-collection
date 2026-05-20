@@ -107,6 +107,15 @@ function initAdminDashboard() {
       document.getElementById('orderDetailContainer').style.display = 'none';
     });
   });
+
+  // Password Change Listener
+  const passwordForm = document.getElementById('passwordForm');
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handlePasswordChange();
+    });
+  }
 }
 
 /* ==========================================================================
@@ -897,4 +906,46 @@ window.removeImageAtIndex = removeImageAtIndex;
 window.viewOrderDetails = viewOrderDetails;
 window.closeOrderDetail = closeOrderDetail;
 window.handleProductImageUpload = handleProductImageUpload;
+
+// ── SETTINGS / PASSWORD ACTIONS ──
+function handlePasswordChange() {
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const errorMsg = document.getElementById('passwordErrorMsg');
+  const successMsg = document.getElementById('passwordSaveMsg');
+  
+  errorMsg.style.display = 'none';
+  successMsg.style.display = 'none';
+
+  if (newPassword !== confirmPassword) {
+    errorMsg.textContent = "New passwords do not match.";
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  fetch('/api/auth/password', {
+    method: 'PUT',
+    headers: getAdminHeaders(),
+    body: JSON.stringify({ currentPassword, newPassword })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw new Error(err.error || 'Failed to update password') });
+    }
+    return res.json();
+  })
+  .then(data => {
+    successMsg.textContent = "Password changed successfully. Please log in again.";
+    successMsg.style.display = 'block';
+    document.getElementById('passwordForm').reset();
+    setTimeout(() => {
+      handleLogout();
+    }, 2000);
+  })
+  .catch(err => {
+    errorMsg.textContent = err.message;
+    errorMsg.style.display = 'block';
+  });
+}
 

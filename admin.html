@@ -20,6 +20,19 @@
         <input type="password" id="adminPass" name="password" required />
         <button type="submit" class="btn btn-primary">Login</button>
         <p id="loginError" class="error-message" style="display:none;"></p>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Login Section -->
+    <section id="loginSection" class="admin-section">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="admin-form">
+        <label for="adminUser">Username</label>
+        <input type="text" id="adminUser" name="username" required />
+        <label for="adminPass">Password</label>
+        <input type="password" id="adminPass" name="password" required />
+        <button type="submit" class="btn btn-primary">Login</button>
+        <p id="loginError" class="error-message" style="display:none;"></p>
       </form>
     </section>
 
@@ -29,6 +42,7 @@
         <button class="admin-tab active" data-target="productsPanel">Products</button>
         <button class="admin-tab" data-target="ordersPanel">Orders</button>
         <button class="admin-tab" data-target="homepagePanel">Homepage</button>
+        <button class="admin-tab" data-target="settingsPanel">Settings</button>
         <button id="logoutBtn" class="admin-logout">Logout</button>
       </nav>
 
@@ -193,6 +207,25 @@
 
           <button type="submit" class="btn btn-primary">Save Settings</button>
           <p id="homepageSaveMsg" class="success-message" style="display:none;"></p>
+        </form>
+      </div>
+
+      <!-- Settings Panel -->
+      <div id="settingsPanel" class="admin-panel" style="display:none;">
+        <h3>Admin Settings</h3>
+        <form id="passwordForm" class="admin-form" style="max-width: 400px;">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" required />
+          
+          <label for="newPassword">New Password (min 6 characters)</label>
+          <input type="password" id="newPassword" name="newPassword" required minlength="6" />
+          
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" />
+          
+          <button type="submit" class="btn btn-primary" style="margin-top: 16px;">Change Password</button>
+          <p id="passwordSaveMsg" class="success-message" style="display:none; margin-top: 10px;"></p>
+          <p id="passwordErrorMsg" class="error-message" style="display:none; margin-top: 10px;"></p>
         </form>
       </div>
     </section>
